@@ -10,6 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
+<<<<<<< HEAD
     PostgrestVersion: "13.0.5"
   }
   public: {
@@ -1056,11 +1057,19 @@ export type Database = {
         }
         Relationships: []
       }
+=======
+    PostgrestVersion: "14.1"
+  }
+  public: {
+    Tables: {
+      [_ in never]: never
+>>>>>>> 6453443a20748151714003a9ab5b6ae418c70485
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+<<<<<<< HEAD
       check_restaurant_subscription: {
         Args: { restaurant_id_param: string }
         Returns: boolean
@@ -1149,6 +1158,12 @@ export type Database = {
         | "delivered"
         | "cancelled"
         | "on_the_way"
+=======
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+>>>>>>> 6453443a20748151714003a9ab5b6ae418c70485
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1275,6 +1290,7 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
+<<<<<<< HEAD
     Enums: {
       app_role: ["admin", "restaurant"],
       order_status: [
@@ -1286,5 +1302,8 @@ export const Constants = {
         "on_the_way",
       ],
     },
+=======
+    Enums: {},
+>>>>>>> 6453443a20748151714003a9ab5b6ae418c70485
   },
 } as const
