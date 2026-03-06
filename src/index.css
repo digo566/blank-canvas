@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Grape Design System - Plus Jakarta Sans font, Purple accents
+   All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+
+    --primary: 270 65% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 10% 20%;
+
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 5% 45%;
+
+    --accent: 270 65% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 270 65% 45%;
+
+    --radius: 0.75rem;
+    
+    --success: 142 72% 40%;
+    --warning: 38 92% 50%;
+    --info: 270 65% 45%;
+
+    /* Category colors for iFood-style grid */
+    --category-pink: 340 82% 65%;
+    --category-red: 345 80% 35%;
+    --category-yellow: 45 95% 55%;
+    --category-orange: 25 95% 55%;
+    --category-purple: 270 65% 45%;
+    --category-green: 142 65% 45%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 10% 10%;
+    --sidebar-primary: 270 65% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent-foreground: 240 10% 10%;
+    --sidebar-border: 240 6% 90%;
+    --sidebar-ring: 270 65% 45%;
+  }
+
+  .dark {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 270 65% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 5% 15%;
+    --muted-foreground: 240 5% 60%;
+
+    --accent: 270 65% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 5% 20%;
+    --input: 240 5% 20%;
+    --ring: 270 65% 55%;
+
+    --sidebar-background: 240 10% 6%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 270 65% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 15%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 5% 20%;
+    --sidebar-ring: 270 65% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
