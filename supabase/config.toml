@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-project_id = "kpkntknwytegnmzdlzab"
+project_id = "quofxsvpgpbsjqldrcyd"
 
 [functions.public-checkout]
 verify_jwt = false
@@ -9,6 +8,3 @@ verify_jwt = true
 
 [functions.analytics-ai-chat]
 verify_jwt = false
-=======
-project_id = "quofxsvpgpbsjqldrcyd"
->>>>>>> 6453443a20748151714003a9ab5b6ae418c70485
