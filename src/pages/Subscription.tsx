@@ -40,14 +40,31 @@ const Subscription = () => {
   });
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsLoggedIn(!!session?.user);
-      if (session?.user?.email) {
-        setFormData(prev => ({ ...prev, email: session.user.email || "" }));
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      const user = session?.user;
+      setIsLoggedIn(!!user);
+
+      if (user?.email) {
+        setFormData(prev => ({ ...prev, email: user.email || "" }));
       }
+
+      // Se for admin, não precisa passar pela tela de pagamento
+      if (user) {
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("role", "admin");
+
+        if (roles && roles.length > 0) {
+          navigate("/dashboard");
+          return;
+        }
+      }
+
       setCheckingAuth(false);
     });
-  }, []);
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +99,7 @@ const Subscription = () => {
 
     setLoading(true);
     try {
-      // Step 1: Create account if not logged in
+      // Step 1: Create account if not logged in (apenas para usuários comuns, não admins)
       if (!isLoggedIn) {
         let normalizedPhone = formData.phone.replace(/\D/g, "");
         if (!normalizedPhone.startsWith("55")) {
