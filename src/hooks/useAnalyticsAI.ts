@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -24,14 +24,16 @@ interface AnalyticsAIResponse {
 export function useAnalyticsAI(analyticsData: AnalyticsData | null) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const isLoadingRef = useRef(false);
 
   const sendMessage = useCallback(
     async (userMessage: string) => {
-      if (!userMessage.trim() || isLoading) return;
+      if (!userMessage.trim() || isLoadingRef.current) return;
 
       const newUserMessage: Message = { role: "user", content: userMessage };
       setMessages((prev) => [...prev, newUserMessage]);
       setIsLoading(true);
+      isLoadingRef.current = true;
 
       try {
         const {
@@ -82,9 +84,10 @@ export function useAnalyticsAI(analyticsData: AnalyticsData | null) {
         setMessages((prev) => prev.filter((m) => m !== newUserMessage));
       } finally {
         setIsLoading(false);
+        isLoadingRef.current = false;
       }
     },
-    [analyticsData, isLoading]
+    [analyticsData]
   );
 
   const clearMessages = useCallback(() => {
