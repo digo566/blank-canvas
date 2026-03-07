@@ -121,6 +121,9 @@ const Auth = () => {
         email: validation.data.email,
         password: validation.data.password,
         options: {
+          // Mantém redirecionamento pós-confirmação de e-mail,
+          // sem atrapalhar o fluxo local sem confirmação.
+          emailRedirectTo: `${window.location.origin}/dashboard`,
           data: {
             restaurant_name: validation.data.restaurantName,
             phone: `+${normalizedPhone}`,

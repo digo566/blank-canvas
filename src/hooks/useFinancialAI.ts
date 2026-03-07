@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
@@ -20,6 +20,7 @@ export function useFinancialAI() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const messagesRef = useRef<Message[]>([]);
 
   const sendMessage = useCallback(
     async (message: string) => {
@@ -27,7 +28,11 @@ export function useFinancialAI() {
       setError(null);
 
       const userMessage: Message = { role: "user", content: message };
-      setMessages((prev) => [...prev, userMessage]);
+      setMessages((prev) => {
+        const next = [...prev, userMessage];
+        messagesRef.current = next;
+        return next;
+      });
 
       try {
         const {
@@ -43,7 +48,7 @@ export function useFinancialAI() {
           {
             body: {
               message,
-              conversationHistory: messages,
+              conversationHistory: messagesRef.current,
             },
           }
         );
@@ -52,24 +57,33 @@ export function useFinancialAI() {
           const msg = error.message || "Erro ao processar mensagem";
           setError(msg);
           // remover mensagem do usuário se falhar
-          setMessages((prev) => prev.filter((m) => m !== userMessage));
+          setMessages((prev) => {
+            const next = prev.filter((m) => m !== userMessage);
+            messagesRef.current = next;
+            return next;
+          });
           throw error;
         }
 
         if (data?.error) {
           const msg = data.error || "Erro ao processar mensagem";
           setError(msg);
-          setMessages((prev) => prev.filter((m) => m !== userMessage));
+          setMessages((prev) => {
+            const next = prev.filter((m) => m !== userMessage);
+            messagesRef.current = next;
+            return next;
+          });
           throw new Error(msg);
         }
 
         const assistantText =
           data?.response || "Não consegui gerar uma resposta no momento.";
 
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: assistantText },
-        ]);
+        setMessages((prev) => {
+          const next = [...prev, { role: "assistant", content: assistantText }];
+          messagesRef.current = next;
+          return next;
+        });
 
         return data;
       } catch (err) {
@@ -81,11 +95,12 @@ export function useFinancialAI() {
         setIsLoading(false);
       }
     },
-    [messages]
+    []
   );
 
   const clearMessages = useCallback(() => {
     setMessages([]);
+    messagesRef.current = [];
     setError(null);
   }, []);
 
