@@ -121,7 +121,6 @@ const Auth = () => {
         email: validation.data.email,
         password: validation.data.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
           data: {
             restaurant_name: validation.data.restaurantName,
             phone: `+${normalizedPhone}`,
