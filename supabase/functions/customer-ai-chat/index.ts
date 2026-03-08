@@ -26,7 +26,6 @@ serve(async (req) => {
       throw new Error("GEMINI_API_KEY não configurada");
     }
 
-    // Fetch restaurant info and products
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -56,6 +55,10 @@ serve(async (req) => {
         optionItems = oiRes.data || [];
       }
     }
+
+    // Build product lookup for order creation
+    const productLookup = new Map(products.map((p: any) => [p.name.toLowerCase().trim(), p]));
+    const optionItemLookup = new Map(optionItems.map((oi: any) => [oi.name.toLowerCase().trim(), oi]));
 
     // Build menu text
     const categoryMap = new Map(categories.map((c: any) => [c.id, c.name]));
@@ -94,6 +97,20 @@ serve(async (req) => {
       }
     }
 
+    // Build product list for JSON reference
+    const productListJson = products.map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      price: Number(p.price),
+    }));
+
+    const optionItemsJson = optionItems.map((oi: any) => ({
+      id: oi.id,
+      name: oi.name,
+      option_group_id: oi.option_group_id,
+      price_modifier: Number(oi.price_modifier || 0),
+    }));
+
     const systemPrompt = `Você é o atendente virtual do restaurante "${profile?.restaurant_name || 'Restaurante'}". 
 Seja simpático, prestativo e objetivo. Fale de forma natural e amigável como um atendente real.
 
@@ -105,16 +122,59 @@ ${profile?.phone ? `- Telefone: ${profile.phone}` : ''}
 CARDÁPIO DISPONÍVEL:
 ${menuText || 'Nenhum produto disponível no momento.'}
 
-REGRAS:
+PRODUTOS (referência para IDs):
+${JSON.stringify(productListJson)}
+
+OPÇÕES (referência para IDs):
+${JSON.stringify(optionItemsJson)}
+
+REGRAS IMPORTANTES:
 1. Só ofereça produtos que estão no cardápio acima. NUNCA invente produtos.
 2. Ajude o cliente a escolher, sugira combinações e explique os produtos.
-3. Quando o cliente decidir o pedido, faça um resumo claro com:
-   - Itens escolhidos com quantidades e opções
-   - Preço de cada item
-   - Total do pedido
-4. Pergunte o endereço de entrega, forma de pagamento (Pix, Dinheiro, Cartão) e se precisa de troco.
-5. Pergunte se tem alguma observação para o pedido.
-6. Após confirmar tudo, diga que o pedido foi anotado e informe o tempo estimado de entrega.
+3. ANTES de finalizar o pedido, você DEVE coletar TODAS estas informações obrigatórias:
+   - **Nome completo** do cliente
+   - **Telefone/WhatsApp** do cliente  
+   - **Endereço completo** de entrega (rua, número, bairro, complemento se houver)
+   - **Itens do pedido** com quantidades e opções escolhidas
+   - **Forma de pagamento**: Pix, Dinheiro ou Cartão
+   - Se for Dinheiro, perguntar se **precisa de troco** e para quanto
+   - **Observações** do pedido (alguma restrição, alergia, etc.)
+
+4. Se o cliente não fornecer alguma informação obrigatória, PERGUNTE antes de confirmar.
+5. Faça um RESUMO COMPLETO do pedido antes de confirmar, incluindo todos os dados coletados.
+6. Quando o cliente CONFIRMAR o pedido (disser "sim", "confirmo", "pode fechar", etc.), ALÉM da mensagem de confirmação, adicione no FINAL da sua resposta um bloco JSON no seguinte formato EXATO:
+
+\`\`\`json_order
+{
+  "order_confirmed": true,
+  "customer_name": "Nome do Cliente",
+  "customer_phone": "telefone",
+  "customer_address": "endereço completo",
+  "payment_method": "pix" ou "dinheiro" ou "cartao",
+  "needs_change": false,
+  "change_amount": 0,
+  "notes": "observações do pedido ou vazio",
+  "items": [
+    {
+      "product_id": "uuid-do-produto",
+      "product_name": "Nome do Produto",
+      "quantity": 1,
+      "unit_price": 10.00,
+      "options": [
+        {
+          "option_item_id": "uuid-da-opcao",
+          "option_item_name": "Nome da Opção",
+          "price_modifier": 2.00
+        }
+      ]
+    }
+  ],
+  "total_amount": 12.00
+}
+\`\`\`
+
+IMPORTANTE: O bloco json_order deve ser incluído APENAS quando o cliente CONFIRMAR o pedido. NÃO inclua antes da confirmação.
+
 7. Se perguntarem algo fora do contexto do restaurante, educadamente redirecione para o cardápio.
 8. Use emojis de forma moderada para deixar a conversa mais agradável.
 9. SEMPRE responda em português brasileiro.`;
@@ -139,7 +199,7 @@ REGRAS:
           contents: geminiContents,
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 1024,
+            maxOutputTokens: 2048,
           },
         }),
       }
@@ -155,9 +215,196 @@ REGRAS:
     }
 
     const data = await response.json();
-    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "Desculpe, não consegui gerar uma resposta.";
+    let aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "Desculpe, não consegui gerar uma resposta.";
 
-    return new Response(JSON.stringify({ response: aiResponse }), {
+    // Check if the AI response contains an order confirmation JSON
+    let orderCreated = false;
+    let orderTrackingCode = null;
+
+    const jsonOrderMatch = aiResponse.match(/```json_order\s*([\s\S]*?)```/);
+    if (jsonOrderMatch) {
+      try {
+        const orderData = JSON.parse(jsonOrderMatch[1].trim());
+        
+        if (orderData.order_confirmed && orderData.items?.length > 0) {
+          console.log("Order confirmed, creating order:", JSON.stringify(orderData));
+
+          // 1. Find or create client
+          let clientId: string | null = null;
+          
+          const { data: existingClients } = await supabase
+            .from("clients")
+            .select("id")
+            .eq("restaurant_id", restaurantId)
+            .eq("phone", orderData.customer_phone)
+            .limit(1);
+
+          if (existingClients && existingClients.length > 0) {
+            clientId = existingClients[0].id;
+            // Update client info
+            await supabase.from("clients").update({
+              name: orderData.customer_name,
+              address: orderData.customer_address,
+            }).eq("id", clientId);
+          } else {
+            const { data: newClient, error: clientError } = await supabase
+              .from("clients")
+              .insert({
+                restaurant_id: restaurantId,
+                name: orderData.customer_name,
+                phone: orderData.customer_phone,
+                address: orderData.customer_address,
+              })
+              .select("id")
+              .single();
+
+            if (clientError) {
+              console.error("Error creating client:", clientError);
+            } else {
+              clientId = newClient.id;
+            }
+          }
+
+          // 2. Calculate total
+          let totalAmount = 0;
+          for (const item of orderData.items) {
+            let itemTotal = Number(item.unit_price) * Number(item.quantity);
+            if (item.options) {
+              for (const opt of item.options) {
+                itemTotal += Number(opt.price_modifier || 0) * Number(item.quantity);
+              }
+            }
+            totalAmount += itemTotal;
+          }
+
+          // Use AI's total if available
+          if (orderData.total_amount && Number(orderData.total_amount) > 0) {
+            totalAmount = Number(orderData.total_amount);
+          }
+
+          // Map payment method
+          let paymentMethod = orderData.payment_method || "dinheiro";
+          const pmMap: Record<string, string> = {
+            "pix": "Pix",
+            "dinheiro": "Dinheiro", 
+            "cartao": "Cartão",
+            "cartão": "Cartão",
+            "credito": "Cartão",
+            "debito": "Cartão",
+          };
+          paymentMethod = pmMap[paymentMethod.toLowerCase()] || paymentMethod;
+
+          // Build notes
+          const noteParts: string[] = [];
+          if (orderData.customer_name) noteParts.push(`Cliente: ${orderData.customer_name}`);
+          if (orderData.customer_phone) noteParts.push(`Tel: ${orderData.customer_phone}`);
+          if (orderData.customer_address) noteParts.push(`Endereço: ${orderData.customer_address}`);
+          if (orderData.notes) noteParts.push(`Obs: ${orderData.notes}`);
+          noteParts.push("📱 Pedido via Atendente Virtual");
+
+          // 3. Create order
+          const { data: newOrder, error: orderError } = await supabase
+            .from("orders")
+            .insert({
+              restaurant_id: restaurantId,
+              client_id: clientId,
+              total_amount: totalAmount,
+              payment_method: paymentMethod,
+              needs_change: orderData.needs_change || false,
+              change_amount: orderData.change_amount || null,
+              notes: noteParts.join("\n"),
+              status: "pending",
+            })
+            .select("id, tracking_code")
+            .single();
+
+          if (orderError) {
+            console.error("Error creating order:", orderError);
+          } else {
+            orderTrackingCode = newOrder.tracking_code;
+            orderCreated = true;
+
+            // 4. Create order items
+            for (const item of orderData.items) {
+              // Try to find the product by ID first, then by name
+              let productId = item.product_id;
+              let unitPrice = Number(item.unit_price);
+
+              // Validate product exists
+              const matchedProduct = products.find((p: any) => 
+                p.id === productId || 
+                p.name.toLowerCase().trim() === (item.product_name || "").toLowerCase().trim()
+              );
+
+              if (matchedProduct) {
+                productId = matchedProduct.id;
+                unitPrice = Number(matchedProduct.price);
+              }
+
+              let optionsTotal = 0;
+              if (item.options) {
+                for (const opt of item.options) {
+                  optionsTotal += Number(opt.price_modifier || 0);
+                }
+              }
+
+              const subtotal = (unitPrice + optionsTotal) * Number(item.quantity);
+
+              const { data: newItem, error: itemError } = await supabase
+                .from("order_items")
+                .insert({
+                  order_id: newOrder.id,
+                  product_id: productId,
+                  quantity: Number(item.quantity),
+                  unit_price: unitPrice,
+                  subtotal: subtotal,
+                })
+                .select("id")
+                .single();
+
+              if (itemError) {
+                console.error("Error creating order item:", itemError);
+              } else if (item.options && item.options.length > 0 && newItem) {
+                // 5. Create order item options
+                for (const opt of item.options) {
+                  const matchedOption = optionItems.find((oi: any) =>
+                    oi.id === opt.option_item_id ||
+                    oi.name.toLowerCase().trim() === (opt.option_item_name || "").toLowerCase().trim()
+                  );
+
+                  if (matchedOption) {
+                    await supabase.from("order_item_options").insert({
+                      order_item_id: newItem.id,
+                      option_item_id: matchedOption.id,
+                      option_item_name: matchedOption.name,
+                      price_modifier: Number(matchedOption.price_modifier || 0),
+                    });
+                  }
+                }
+              }
+            }
+
+            console.log("Order created successfully:", newOrder.id, "tracking:", orderTrackingCode);
+          }
+        }
+      } catch (parseError) {
+        console.error("Error parsing order JSON:", parseError);
+      }
+
+      // Remove the JSON block from the visible message
+      aiResponse = aiResponse.replace(/```json_order\s*[\s\S]*?```/, "").trim();
+
+      // Append tracking code info if order was created
+      if (orderCreated && orderTrackingCode) {
+        aiResponse += `\n\n📋 **Código de rastreio do seu pedido: ${orderTrackingCode}**\nVocê pode acompanhar seu pedido usando este código!`;
+      }
+    }
+
+    return new Response(JSON.stringify({ 
+      response: aiResponse,
+      orderCreated,
+      trackingCode: orderTrackingCode,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
