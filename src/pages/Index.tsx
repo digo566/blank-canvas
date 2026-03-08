@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, Zap, Shield, BarChart3, Smartphone, Clock } from "lucide-react";
+import { DifferentialsSection } from "@/components/landing/DifferentialsSection";
 import grapeLogo from "@/assets/grape-logo.png";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
