@@ -49,6 +49,7 @@ serve(async (req) => {
       return true;
     });
     const deliveryMode = profile?.delivery_mode || "delivery_and_pickup";
+    const loyaltyConfig = loyaltyRes.data;
 
     // Fetch product options
     const productIds = products.map((p: any) => p.id);
