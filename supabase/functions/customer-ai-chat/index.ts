@@ -324,12 +324,12 @@ IMPORTANTE:
           };
           paymentMethod = pmMap[paymentMethod.toLowerCase()] || paymentMethod;
 
-          // Build notes
+          // Build notes - organized and clear
           const noteParts: string[] = [];
-          if (orderData.customer_name) noteParts.push(`Cliente: ${orderData.customer_name}`);
-          if (orderData.customer_phone) noteParts.push(`Tel: ${orderData.customer_phone}`);
-          if (orderData.customer_address) noteParts.push(`Endereço: ${orderData.customer_address}`);
-          if (orderData.notes) noteParts.push(`Obs: ${orderData.notes}`);
+          noteParts.push(`👤 Cliente: ${sanitizedName}`);
+          noteParts.push(`📞 Tel: ${sanitizedPhone}`);
+          noteParts.push(`📍 Endereço: ${sanitizedAddress}`);
+          if (orderData.notes && orderData.notes.trim()) noteParts.push(`📝 Obs: ${orderData.notes.trim()}`);
           noteParts.push("📱 Pedido via Atendente Virtual");
 
           // 3. Create order
