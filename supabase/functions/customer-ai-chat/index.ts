@@ -129,6 +129,29 @@ serve(async (req) => {
       }
     }
 
+    // Build coupons text
+    let couponsText = "";
+    if (coupons.length > 0) {
+      couponsText = "\nCUPONS DE DESCONTO DISPONÍVEIS:\n";
+      for (const coupon of coupons) {
+        const discountStr = coupon.discount_type === "percentage"
+          ? `${coupon.discount_value}% de desconto`
+          : `R$ ${Number(coupon.discount_value).toFixed(2)} de desconto`;
+        couponsText += `  • ${coupon.code} - ${discountStr}`;
+        if (coupon.description) couponsText += ` (${coupon.description})`;
+        if (coupon.min_order_amount > 0) couponsText += ` - pedido mínimo R$ ${Number(coupon.min_order_amount).toFixed(2)}`;
+        couponsText += "\n";
+      }
+    }
+
+    const couponsJson = coupons.map((c: any) => ({
+      id: c.id,
+      code: c.code,
+      discount_type: c.discount_type,
+      discount_value: Number(c.discount_value),
+      min_order_amount: Number(c.min_order_amount || 0),
+    }));
+
     const deliveryModeText = deliveryMode === "delivery_only"
       ? "MODO: Apenas DELIVERY (entrega no endereço do cliente)"
       : "MODO: DELIVERY (entrega) ou RETIRADA NO LOCAL (o cliente escolhe)";
