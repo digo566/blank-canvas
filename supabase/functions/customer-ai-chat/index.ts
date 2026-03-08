@@ -165,6 +165,7 @@ ${profile?.phone ? `- Telefone: ${profile.phone}` : ''}
 - Tempo de entrega: ${profile?.min_delivery_time || 30} a ${profile?.max_delivery_time || 60} minutos
 - ${deliveryModeText}
 ${deliveryZonesText}
+${couponsText}
 
 CARDÁPIO DISPONÍVEL:
 ${menuText || 'Nenhum produto disponível no momento.'}
@@ -174,6 +175,9 @@ ${JSON.stringify(productListJson)}
 
 OPÇÕES (referência para IDs):
 ${JSON.stringify(optionItemsJson)}
+
+CUPONS (referência para IDs):
+${JSON.stringify(couponsJson)}
 
 REGRAS IMPORTANTES:
 1. Só ofereça produtos que estão no cardápio acima. NUNCA invente produtos.
