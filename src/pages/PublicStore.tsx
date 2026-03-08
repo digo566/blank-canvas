@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ShoppingCart, Store, Package } from "lucide-react";
+import { ShoppingCart, Store, Package, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { CartModal } from "@/components/CartModal";
 import { ProductOptionsDialog } from "@/components/ProductOptionsDialog";
@@ -357,6 +357,20 @@ const PublicStore = () => {
           </Button>
         </div>
       </div>
+
+      {/* Floating AI Chat Button */}
+      <Link
+        to={`/chat/${restaurantId}`}
+        className="fixed bottom-6 right-6 z-50"
+      >
+        <Button
+          size="lg"
+          className="rounded-full shadow-lg h-14 w-14 sm:w-auto sm:px-5 gap-2"
+        >
+          <MessageCircle className="h-6 w-6" />
+          <span className="hidden sm:inline font-semibold">Falar com Atendente</span>
+        </Button>
+      </Link>
 
       {/* Restaurant Info Card */}
       <div className="container mx-auto px-4">

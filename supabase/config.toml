@@ -8,3 +8,6 @@ verify_jwt = true
 
 [functions.analytics-ai-chat]
 verify_jwt = false
+
+[functions.customer-ai-chat]
+verify_jwt = false

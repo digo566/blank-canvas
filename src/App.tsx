@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import PublicStore from "./pages/PublicStore";
 import TrackOrder from "./pages/TrackOrder";
+import AIAttendant from "./pages/AIAttendant";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import AuthRecoveryListener from "./components/AuthRecoveryListener";
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="/track" element={<TrackOrder />} />
             <Route path="/store/:restaurantId" element={<PublicStore />} />
             <Route path="/r/:restaurantId" element={<PublicStore />} />
+            <Route path="/chat/:restaurantId" element={<AIAttendant />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/subscription" element={<Subscription />} />
