@@ -72,38 +72,7 @@ const TrackOrder = () => {
       toast.error("Digite o código de rastreamento");
       return;
     }
-
-    setLoading(true);
-    try {
-      // Use security definer function to bypass RLS for public tracking
-      const { data: orderData, error: orderError } = await supabase
-        .rpc("get_order_by_tracking_code", { tracking_code_param: trackingCode.toUpperCase() });
-
-      if (orderError || !orderData || orderData.length === 0) {
-        toast.error("Código não encontrado");
-        setOrder(null);
-        return;
-      }
-
-      const ord = orderData[0];
-
-      // Fetch items via security definer function
-      const { data: items } = await supabase
-        .rpc("get_order_items_by_order_id", { order_id_param: ord.id });
-
-      setOrder({
-        ...ord,
-        order_items: (items || []).map((i: any) => ({
-          quantity: i.quantity,
-          products: { name: i.product_name },
-        })),
-      } as any);
-    } catch (error) {
-      console.error("Error tracking order:", error);
-      toast.error("Erro ao buscar pedido");
-    } finally {
-      setLoading(false);
-    }
+    handleTrackCode(trackingCode);
   };
 
   const statusConfig = {
