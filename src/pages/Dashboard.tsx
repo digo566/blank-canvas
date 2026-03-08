@@ -33,10 +33,16 @@ const Dashboard = () => {
   const [userId, setUserId] = useState<string>("");
 
   const storeUrl = `${window.location.origin}/r/${userId}`;
+  const chatUrl = `${window.location.origin}/chat/${userId}`;
 
   const copyStoreUrl = () => {
     navigator.clipboard.writeText(storeUrl);
-    toast.success("Link copiado!");
+    toast.success("Link da loja copiado!");
+  };
+
+  const copyChatUrl = () => {
+    navigator.clipboard.writeText(chatUrl);
+    toast.success("Link do atendente copiado!");
   };
 
   useEffect(() => {
