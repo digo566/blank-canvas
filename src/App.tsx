@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import PublicStore from "./pages/PublicStore";
 import TrackOrder from "./pages/TrackOrder";
+import AIAttendant from "./pages/AIAttendant";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import AuthRecoveryListener from "./components/AuthRecoveryListener";
