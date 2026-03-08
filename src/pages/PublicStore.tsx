@@ -146,15 +146,20 @@ const PublicStore = () => {
       
       setProducts(productsData || []);
 
-      // Load categories with image_url
+      // Load categories with image_url - use service-level access via anon key (RLS allows public read)
       const { data: categoriesData, error: categoriesError } = await supabase
         .from("product_categories")
         .select("id, name, display_order, image_url")
         .eq("restaurant_id", restaurantId)
         .order("display_order", { ascending: true });
 
-      if (categoriesError) throw categoriesError;
-      setCategories(categoriesData || []);
+      if (categoriesError) {
+        console.warn("Erro ao carregar categorias:", categoriesError);
+        // Fallback: show products without category grouping
+        setCategories([]);
+      } else {
+        setCategories(categoriesData || []);
+      }
     } catch (error: unknown) {
       console.error("Erro ao carregar dados:", error);
       toast.error("Erro ao carregar dados da loja");
