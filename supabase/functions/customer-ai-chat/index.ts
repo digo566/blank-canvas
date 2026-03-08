@@ -30,12 +30,13 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const [profileRes, productsRes, categoriesRes, zonesRes, couponsRes] = await Promise.all([
+    const [profileRes, productsRes, categoriesRes, zonesRes, couponsRes, loyaltyRes] = await Promise.all([
       supabase.from("profiles").select("restaurant_name, phone, min_delivery_time, max_delivery_time, opening_hours, delivery_mode").eq("id", restaurantId).single(),
       supabase.from("products").select("id, name, description, price, category_id, available").eq("restaurant_id", restaurantId).eq("available", true),
       supabase.from("product_categories").select("id, name").eq("restaurant_id", restaurantId).order("display_order"),
       supabase.from("delivery_zones").select("neighborhood_name, delivery_fee, is_active").eq("restaurant_id", restaurantId).eq("is_active", true).order("neighborhood_name"),
       supabase.from("coupons").select("id, code, description, discount_type, discount_value, min_order_amount, max_uses, current_uses, is_active, expires_at").eq("restaurant_id", restaurantId).eq("is_active", true),
+      supabase.from("loyalty_config").select("*").eq("restaurant_id", restaurantId).eq("is_enabled", true).maybeSingle(),
     ]);
 
     const profile = profileRes.data;
@@ -48,6 +49,7 @@ serve(async (req) => {
       return true;
     });
     const deliveryMode = profile?.delivery_mode || "delivery_and_pickup";
+    const loyaltyConfig = loyaltyRes.data;
 
     // Fetch product options
     const productIds = products.map((p: any) => p.id);
@@ -152,6 +154,17 @@ serve(async (req) => {
       min_order_amount: Number(c.min_order_amount || 0),
     }));
 
+    // Build loyalty text
+    let loyaltyText = "";
+    if (loyaltyConfig) {
+      const rewardStr = loyaltyConfig.reward_type === "percentage"
+        ? `${loyaltyConfig.reward_value}% de desconto`
+        : loyaltyConfig.reward_type === "fixed"
+          ? `R$ ${Number(loyaltyConfig.reward_value).toFixed(2)} de desconto`
+          : "entrega grátis";
+      loyaltyText = `\nPROGRAMA DE FIDELIDADE ATIVO:\n- A cada R$ ${Number(loyaltyConfig.spend_threshold).toFixed(2)} em compras acumuladas, o cliente ganha ${rewardStr}.\n- ${loyaltyConfig.reward_description || ""}\n- Quando o cliente informar o telefone, você pode consultar o progresso de fidelidade dele.\n`;
+    }
+
     const deliveryModeText = deliveryMode === "delivery_only"
       ? "MODO: Apenas DELIVERY (entrega no endereço do cliente)"
       : "MODO: DELIVERY (entrega) ou RETIRADA NO LOCAL (o cliente escolhe)";
@@ -166,6 +179,7 @@ ${profile?.phone ? `- Telefone: ${profile.phone}` : ''}
 - ${deliveryModeText}
 ${deliveryZonesText}
 ${couponsText}
+${loyaltyText}
 
 CARDÁPIO DISPONÍVEL:
 ${menuText || 'Nenhum produto disponível no momento.'}
@@ -534,6 +548,41 @@ IMPORTANTE:
             }
 
             console.log("Order created successfully:", newOrder.id, "tracking:", orderTrackingCode);
+
+            // Update loyalty progress
+            if (loyaltyConfig && sanitizedPhone) {
+              try {
+                const { data: existingProgress } = await supabase
+                  .from("loyalty_progress")
+                  .select("id, total_spent, rewards_earned")
+                  .eq("restaurant_id", restaurantId)
+                  .eq("phone", sanitizedPhone)
+                  .maybeSingle();
+
+                const orderTotal = totalAmount;
+                if (existingProgress) {
+                  const newTotal = Number(existingProgress.total_spent) + orderTotal;
+                  const newRewards = Math.floor(newTotal / Number(loyaltyConfig.spend_threshold));
+                  await supabase.from("loyalty_progress").update({
+                    total_spent: newTotal,
+                    rewards_earned: newRewards,
+                    client_id: clientId,
+                    updated_at: new Date().toISOString(),
+                  }).eq("id", existingProgress.id);
+                } else {
+                  const newRewards = Math.floor(orderTotal / Number(loyaltyConfig.spend_threshold));
+                  await supabase.from("loyalty_progress").insert({
+                    restaurant_id: restaurantId,
+                    client_id: clientId,
+                    phone: sanitizedPhone,
+                    total_spent: orderTotal,
+                    rewards_earned: newRewards,
+                  });
+                }
+              } catch (loyaltyError) {
+                console.error("Error updating loyalty:", loyaltyError);
+              }
+            }
           }
         }
       } catch (parseError) {

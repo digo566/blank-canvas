@@ -672,6 +672,86 @@ export type Database = {
         }
         Relationships: []
       }
+      loyalty_config: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_enabled: boolean
+          restaurant_id: string
+          reward_description: string | null
+          reward_type: string
+          reward_value: number
+          spend_threshold: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean
+          restaurant_id: string
+          reward_description?: string | null
+          reward_type?: string
+          reward_value?: number
+          spend_threshold?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean
+          restaurant_id?: string
+          reward_description?: string | null
+          reward_type?: string
+          reward_value?: number
+          spend_threshold?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      loyalty_progress: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          id: string
+          phone: string
+          restaurant_id: string
+          rewards_earned: number
+          rewards_redeemed: number
+          total_spent: number
+          updated_at: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          id?: string
+          phone: string
+          restaurant_id: string
+          rewards_earned?: number
+          rewards_redeemed?: number
+          total_spent?: number
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          id?: string
+          phone?: string
+          restaurant_id?: string
+          rewards_earned?: number
+          rewards_redeemed?: number
+          total_spent?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_progress_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_item_options: {
         Row: {
           created_at: string | null

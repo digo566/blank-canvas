@@ -11,6 +11,7 @@ import { ImageUpload } from "@/components/ImageUpload";
 import { DeliveryZonesManager } from "@/components/settings/DeliveryZonesManager";
 import { CouponsManager } from "@/components/settings/CouponsManager";
 import { FiscalSettingsManager } from "@/components/settings/FiscalSettingsManager";
+import { LoyaltyManager } from "@/components/settings/LoyaltyManager";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -165,6 +166,7 @@ const Settings = () => {
             <TabsTrigger value="delivery">Entrega</TabsTrigger>
             <TabsTrigger value="hours">Horários</TabsTrigger>
             <TabsTrigger value="coupons">Cupons</TabsTrigger>
+            <TabsTrigger value="loyalty">Fidelidade</TabsTrigger>
             <TabsTrigger value="fiscal">Fiscal</TabsTrigger>
           </TabsList>
 
@@ -332,6 +334,10 @@ const Settings = () => {
 
           <TabsContent value="coupons" className="space-y-4">
             <CouponsManager />
+          </TabsContent>
+
+          <TabsContent value="loyalty" className="space-y-4">
+            <LoyaltyManager />
           </TabsContent>
 
           <TabsContent value="fiscal" className="space-y-4">
