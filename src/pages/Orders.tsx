@@ -16,6 +16,8 @@ interface Order {
   id: string;
   tracking_code: string;
   total_amount: number;
+  delivery_fee: number | null;
+  coupon_discount: number | null;
   status: string;
   created_at: string;
   payment_method: string | null;
