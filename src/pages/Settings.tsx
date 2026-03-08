@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/ImageUpload";
 import { DeliveryZonesManager } from "@/components/settings/DeliveryZonesManager";
+import { CouponsManager } from "@/components/settings/CouponsManager";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
