@@ -1256,6 +1256,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_coupon_usage: {
+        Args: { coupon_id_param: string }
+        Returns: undefined
+      }
       mark_abandoned_carts: { Args: never; Returns: undefined }
     }
     Enums: {
