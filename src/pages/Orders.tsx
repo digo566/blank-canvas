@@ -411,6 +411,15 @@ const Orders = () => {
                   </Select>
                 </div>
 
+                {/* Loyalty Badge */}
+                {user && selectedOrder.clients?.phone && (
+                  <LoyaltyBadge
+                    phone={selectedOrder.clients.phone}
+                    clientName={selectedOrder.clients.name}
+                    restaurantId={user.id}
+                  />
+                )}
+
                 {/* Pre-Nota Fiscal */}
                 <PreNotaFiscal order={selectedOrder} />
 
