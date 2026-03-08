@@ -272,19 +272,18 @@ IMPORTANTE:
 
           if (existingClients && existingClients.length > 0) {
             clientId = existingClients[0].id;
-            // Update client info
             await supabase.from("clients").update({
-              name: orderData.customer_name,
-              address: orderData.customer_address,
+              name: sanitizedName,
+              address: sanitizedAddress,
             }).eq("id", clientId);
           } else {
             const { data: newClient, error: clientError } = await supabase
               .from("clients")
               .insert({
                 restaurant_id: restaurantId,
-                name: orderData.customer_name,
-                phone: orderData.customer_phone,
-                address: orderData.customer_address,
+                name: sanitizedName,
+                phone: sanitizedPhone,
+                address: sanitizedAddress,
               })
               .select("id")
               .single();
