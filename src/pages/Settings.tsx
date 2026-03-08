@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/ImageUpload";
 import { DeliveryZonesManager } from "@/components/settings/DeliveryZonesManager";
 import { CouponsManager } from "@/components/settings/CouponsManager";
+import { FiscalSettingsManager } from "@/components/settings/FiscalSettingsManager";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
