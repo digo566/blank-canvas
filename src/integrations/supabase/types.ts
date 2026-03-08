@@ -1078,6 +1078,27 @@ export type Database = {
           value: number
         }[]
       }
+      get_order_by_tracking_code: {
+        Args: { tracking_code_param: string }
+        Returns: {
+          created_at: string
+          delivered_at: string
+          id: string
+          notes: string
+          preparation_started_at: string
+          ready_at: string
+          status: string
+          total_amount: number
+          tracking_code: string
+        }[]
+      }
+      get_order_items_by_order_id: {
+        Args: { order_id_param: string }
+        Returns: {
+          product_name: string
+          quantity: number
+        }[]
+      }
       get_public_products: {
         Args: { restaurant_id_param: string }
         Returns: {
