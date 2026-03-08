@@ -184,6 +184,26 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
+        {/* AI Attendant Link Card */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <MessageCircle className="w-4 h-4 text-primary" />
+              Link do Atendente Virtual
+            </CardTitle>
+            <CardDescription>Envie para seus clientes fazerem pedidos via chat com IA</CardDescription>
+          </CardHeader>
+          <CardContent className="flex gap-2">
+            <Input value={chatUrl} readOnly className="font-mono text-sm" />
+            <Button onClick={copyChatUrl} variant="outline" size="icon">
+              <Copy className="w-4 h-4" />
+            </Button>
+            <Button onClick={() => window.open(chatUrl, "_blank")}>
+              Abrir
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <Card>
