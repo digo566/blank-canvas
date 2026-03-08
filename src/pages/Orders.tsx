@@ -120,6 +120,31 @@ const Orders = () => {
     }
   };
 
+  const updateDeliveryFee = async (orderId: string, fee: number) => {
+    try {
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+      
+      const oldFee = Number(order.delivery_fee || 0);
+      const newTotal = Number(order.total_amount) - oldFee + fee;
+      
+      const { error } = await supabase
+        .from("orders")
+        .update({ delivery_fee: fee, total_amount: newTotal })
+        .eq("id", orderId);
+
+      if (error) throw error;
+      toast.success("Taxa de entrega atualizada!");
+      loadOrders();
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder(prev => prev ? { ...prev, delivery_fee: fee, total_amount: newTotal } : null);
+      }
+      setEditingDeliveryFee(null);
+    } catch {
+      toast.error("Erro ao atualizar taxa");
+    }
+  };
+
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
       !searchTerm ||
