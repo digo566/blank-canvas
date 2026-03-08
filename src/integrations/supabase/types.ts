@@ -847,6 +847,59 @@ export type Database = {
           },
         ]
       }
+      pre_notas_fiscais: {
+        Row: {
+          company_cnpj: string | null
+          company_name: string | null
+          created_at: string | null
+          customer_cpf: string | null
+          customer_name: string | null
+          data_venda: string
+          descricao: string | null
+          id: string
+          order_id: string
+          pdf_url: string | null
+          restaurant_id: string
+          valor_total: number
+        }
+        Insert: {
+          company_cnpj?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          customer_cpf?: string | null
+          customer_name?: string | null
+          data_venda: string
+          descricao?: string | null
+          id?: string
+          order_id: string
+          pdf_url?: string | null
+          restaurant_id: string
+          valor_total: number
+        }
+        Update: {
+          company_cnpj?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          customer_cpf?: string | null
+          customer_name?: string | null
+          data_venda?: string
+          descricao?: string | null
+          id?: string
+          order_id?: string
+          pdf_url?: string | null
+          restaurant_id?: string
+          valor_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pre_notas_fiscais_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_categories: {
         Row: {
           created_at: string | null
@@ -1008,6 +1061,11 @@ export type Database = {
           cover_url: string | null
           created_at: string | null
           delivery_mode: string
+          fiscal_cnpj: string | null
+          fiscal_endereco: string | null
+          fiscal_inscricao_municipal: string | null
+          fiscal_nome_fantasia: string | null
+          fiscal_razao_social: string | null
           id: string
           logo_url: string | null
           max_delivery_time: number | null
@@ -1023,6 +1081,11 @@ export type Database = {
           cover_url?: string | null
           created_at?: string | null
           delivery_mode?: string
+          fiscal_cnpj?: string | null
+          fiscal_endereco?: string | null
+          fiscal_inscricao_municipal?: string | null
+          fiscal_nome_fantasia?: string | null
+          fiscal_razao_social?: string | null
           id: string
           logo_url?: string | null
           max_delivery_time?: number | null
@@ -1038,6 +1101,11 @@ export type Database = {
           cover_url?: string | null
           created_at?: string | null
           delivery_mode?: string
+          fiscal_cnpj?: string | null
+          fiscal_endereco?: string | null
+          fiscal_inscricao_municipal?: string | null
+          fiscal_nome_fantasia?: string | null
+          fiscal_razao_social?: string | null
           id?: string
           logo_url?: string | null
           max_delivery_time?: number | null
