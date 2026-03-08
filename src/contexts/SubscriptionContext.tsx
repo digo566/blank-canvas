@@ -86,12 +86,12 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   useEffect(() => {
-    if (user && !checked) {
+    if (user && !checkedOnce) {
       checkSubscription();
     } else if (!user) {
       setLoading(false);
     }
-  }, [user, checked, checkSubscription]);
+  }, [user, checkedOnce, checkSubscription]);
 
   return (
     <SubscriptionContext.Provider value={{ loading, hasActiveSubscription, subscription, isOnTrial, trialDaysLeft, checkSubscription }}>
