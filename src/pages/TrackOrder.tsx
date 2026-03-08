@@ -25,9 +25,47 @@ interface Order {
 }
 
 const TrackOrder = () => {
-  const [trackingCode, setTrackingCode] = useState("");
+  const [searchParams] = useSearchParams();
+  const [trackingCode, setTrackingCode] = useState(searchParams.get("code") || "");
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const code = searchParams.get("code");
+    if (code) {
+      setTrackingCode(code.toUpperCase());
+      handleTrackCode(code.toUpperCase());
+    }
+  }, []);
+
+  const handleTrackCode = async (code: string) => {
+    if (!code.trim()) {
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data: orderData, error: orderError } = await supabase
+        .rpc("get_order_by_tracking_code", { tracking_code_param: code.toUpperCase() });
+      if (orderError || !orderData || orderData.length === 0) {
+        setOrder(null);
+        return;
+      }
+      const ord = orderData[0];
+      const { data: items } = await supabase
+        .rpc("get_order_items_by_order_id", { order_id_param: ord.id });
+      setOrder({
+        ...ord,
+        order_items: (items || []).map((i: any) => ({
+          quantity: i.quantity,
+          products: { name: i.product_name },
+        })),
+      } as any);
+    } catch (error) {
+      console.error("Error tracking order:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleTrack = async () => {
     if (!trackingCode.trim()) {
