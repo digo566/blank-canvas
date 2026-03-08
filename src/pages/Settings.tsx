@@ -336,6 +336,10 @@ const Settings = () => {
             <CouponsManager />
           </TabsContent>
 
+          <TabsContent value="loyalty" className="space-y-4">
+            <LoyaltyManager />
+          </TabsContent>
+
           <TabsContent value="fiscal" className="space-y-4">
             <FiscalSettingsManager />
           </TabsContent>
