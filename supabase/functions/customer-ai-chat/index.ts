@@ -465,6 +465,14 @@ IMPORTANTE:
             orderTrackingCode = newOrder.tracking_code;
             orderCreated = true;
 
+            // Increment coupon usage
+            if (couponId) {
+              await supabase.rpc("increment_coupon_usage" as any, { coupon_id_param: couponId }).catch(() => {
+                // Fallback: direct update
+                supabase.from("coupons").update({ current_uses: coupons.find((c: any) => c.id === couponId)?.current_uses + 1 || 1 }).eq("id", couponId);
+              });
+            }
+
             // 4. Create order items
             for (const item of orderData.items) {
               // Try to find the product by ID first, then by name
