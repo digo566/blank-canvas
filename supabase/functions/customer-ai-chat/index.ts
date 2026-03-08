@@ -40,6 +40,8 @@ serve(async (req) => {
     const profile = profileRes.data;
     const products = productsRes.data || [];
     const categories = categoriesRes.data || [];
+    const deliveryZones = zonesRes.data || [];
+    const deliveryMode = profile?.delivery_mode || "delivery_and_pickup";
 
     // Fetch product options
     const productIds = products.map((p: any) => p.id);
