@@ -333,6 +333,10 @@ const Settings = () => {
           <TabsContent value="coupons" className="space-y-4">
             <CouponsManager />
           </TabsContent>
+
+          <TabsContent value="fiscal" className="space-y-4">
+            <FiscalSettingsManager />
+          </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>
