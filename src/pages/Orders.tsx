@@ -408,6 +408,9 @@ const Orders = () => {
                   </Select>
                 </div>
 
+                {/* Pre-Nota Fiscal */}
+                <PreNotaFiscal order={selectedOrder} />
+
                 {selectedOrder.clients?.phone && (
                   <Button
                     variant="outline"
