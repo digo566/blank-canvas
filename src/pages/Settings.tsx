@@ -11,6 +11,7 @@ import { ImageUpload } from "@/components/ImageUpload";
 import { DeliveryZonesManager } from "@/components/settings/DeliveryZonesManager";
 import { CouponsManager } from "@/components/settings/CouponsManager";
 import { FiscalSettingsManager } from "@/components/settings/FiscalSettingsManager";
+import { LoyaltyManager } from "@/components/settings/LoyaltyManager";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
