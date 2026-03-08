@@ -162,9 +162,9 @@ REGRAS IMPORTANTES:
 \`\`\`json_order
 {
   "order_confirmed": true,
-  "customer_name": "Nome do Cliente",
-  "customer_phone": "telefone",
-  "customer_address": "endereço completo",
+  "customer_name": "Nome Completo do Cliente",
+  "customer_phone": "85999998888",
+  "customer_address": "Rua Exemplo, 123, Bairro Centro, Apto 101 - Cidade",
   "payment_method": "pix" ou "dinheiro" ou "cartao",
   "needs_change": false,
   "change_amount": 0,
