@@ -247,16 +247,27 @@ IMPORTANTE:
         const orderData = JSON.parse(jsonOrderMatch[1].trim());
         
         if (orderData.order_confirmed && orderData.items?.length > 0) {
-          console.log("Order confirmed, creating order:", JSON.stringify(orderData));
+          // Sanitize phone: keep only digits
+          const sanitizedPhone = (orderData.customer_phone || "").replace(/\D/g, "");
+          const sanitizedName = (orderData.customer_name || "").trim();
+          const sanitizedAddress = (orderData.customer_address || "").trim();
+          
+          console.log("Order confirmed. Name:", sanitizedName, "Phone:", sanitizedPhone, "Address:", sanitizedAddress);
 
           // 1. Find or create client
           let clientId: string | null = null;
+          
+          // Try to find by phone (exact match and also with +55 prefix)
+          const phonesToSearch = [sanitizedPhone];
+          if (sanitizedPhone.length === 11 || sanitizedPhone.length === 10) {
+            phonesToSearch.push(`+55${sanitizedPhone}`);
+          }
           
           const { data: existingClients } = await supabase
             .from("clients")
             .select("id")
             .eq("restaurant_id", restaurantId)
-            .eq("phone", orderData.customer_phone)
+            .in("phone", phonesToSearch)
             .limit(1);
 
           if (existingClients && existingClients.length > 0) {
