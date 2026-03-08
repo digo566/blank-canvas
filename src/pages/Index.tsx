@@ -245,6 +245,8 @@ const Index = () => {
         </div>
       </section>
 
+      <DifferentialsSection />
+
       <section className="relative z-10 bg-gradient-to-b from-[hsl(270,65%,12%)] to-[hsl(270,65%,18%)] py-16 md:py-24">
         <div className="container">
           <h2 className="text-2xl md:text-4xl font-extrabold mb-12 text-center leading-tight">
