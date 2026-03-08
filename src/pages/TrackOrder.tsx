@@ -36,34 +36,29 @@ const TrackOrder = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("orders")
-        .select(`
-          id,
-          tracking_code,
-          status,
-          total_amount,
-          created_at,
-          preparation_started_at,
-          ready_at,
-          delivered_at,
-          order_items (
-            quantity,
-            products (
-              name
-            )
-          )
-        `)
-        .eq("tracking_code", trackingCode.toUpperCase())
-        .single();
+      // Use security definer function to bypass RLS for public tracking
+      const { data: orderData, error: orderError } = await supabase
+        .rpc("get_order_by_tracking_code", { tracking_code_param: trackingCode.toUpperCase() });
 
-      if (error || !data) {
+      if (orderError || !orderData || orderData.length === 0) {
         toast.error("Código não encontrado");
         setOrder(null);
         return;
       }
 
-      setOrder(data as any);
+      const ord = orderData[0];
+
+      // Fetch items via security definer function
+      const { data: items } = await supabase
+        .rpc("get_order_items_by_order_id", { order_id_param: ord.id });
+
+      setOrder({
+        ...ord,
+        order_items: (items || []).map((i: any) => ({
+          quantity: i.quantity,
+          products: { name: i.product_name },
+        })),
+      } as any);
     } catch (error) {
       console.error("Error tracking order:", error);
       toast.error("Erro ao buscar pedido");
