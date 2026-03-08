@@ -327,6 +327,10 @@ const Settings = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="coupons" className="space-y-4">
+            <CouponsManager />
+          </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>
