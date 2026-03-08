@@ -68,6 +68,8 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
           setIsOnTrial(true);
           setTrialDaysLeft(daysLeft);
           setHasActiveSubscription(true);
+          setLoading(false);
+          setCheckedOnce(true);
           return;
         }
         setIsOnTrial(false);
@@ -79,7 +81,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
       setHasActiveSubscription(false);
     } finally {
       setLoading(false);
-      setChecked(true);
+      setCheckedOnce(true);
     }
   }, [user]);
 
