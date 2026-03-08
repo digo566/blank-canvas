@@ -12,6 +12,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Search, ShoppingBag, MessageCircle } from "lucide-react";
 import { PreNotaFiscal } from "@/components/orders/PreNotaFiscal";
+import { LoyaltyBadge } from "@/components/orders/LoyaltyBadge";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Order {
   id: string;
