@@ -154,6 +154,17 @@ serve(async (req) => {
       min_order_amount: Number(c.min_order_amount || 0),
     }));
 
+    // Build loyalty text
+    let loyaltyText = "";
+    if (loyaltyConfig) {
+      const rewardStr = loyaltyConfig.reward_type === "percentage"
+        ? `${loyaltyConfig.reward_value}% de desconto`
+        : loyaltyConfig.reward_type === "fixed"
+          ? `R$ ${Number(loyaltyConfig.reward_value).toFixed(2)} de desconto`
+          : "entrega grátis";
+      loyaltyText = `\nPROGRAMA DE FIDELIDADE ATIVO:\n- A cada R$ ${Number(loyaltyConfig.spend_threshold).toFixed(2)} em compras acumuladas, o cliente ganha ${rewardStr}.\n- ${loyaltyConfig.reward_description || ""}\n- Quando o cliente informar o telefone, você pode consultar o progresso de fidelidade dele.\n`;
+    }
+
     const deliveryModeText = deliveryMode === "delivery_only"
       ? "MODO: Apenas DELIVERY (entrega no endereço do cliente)"
       : "MODO: DELIVERY (entrega) ou RETIRADA NO LOCAL (o cliente escolhe)";
