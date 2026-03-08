@@ -42,6 +42,11 @@ serve(async (req) => {
     const products = productsRes.data || [];
     const categories = categoriesRes.data || [];
     const deliveryZones = zonesRes.data || [];
+    const coupons = (couponsRes.data || []).filter((c: any) => {
+      if (c.max_uses && c.current_uses >= c.max_uses) return false;
+      if (c.expires_at && new Date(c.expires_at) < new Date()) return false;
+      return true;
+    });
     const deliveryMode = profile?.delivery_mode || "delivery_and_pickup";
 
     // Fetch product options
