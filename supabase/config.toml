@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.customer-ai-chat]
 verify_jwt = false
+
+[functions.asaas-subscription]
+verify_jwt = false

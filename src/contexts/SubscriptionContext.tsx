@@ -39,6 +39,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const [isOnTrial, setIsOnTrial] = useState(false);
   const [trialDaysLeft, setTrialDaysLeft] = useState(0);
   const [checked, setChecked] = useState(false);
+  const [checkedOnce, setCheckedOnce] = useState(false);
 
   const checkSubscription = useCallback(async () => {
     if (!user) {
@@ -67,6 +68,8 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
           setIsOnTrial(true);
           setTrialDaysLeft(daysLeft);
           setHasActiveSubscription(true);
+          setLoading(false);
+          setCheckedOnce(true);
           return;
         }
         setIsOnTrial(false);
@@ -78,17 +81,17 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
       setHasActiveSubscription(false);
     } finally {
       setLoading(false);
-      setChecked(true);
+      setCheckedOnce(true);
     }
   }, [user]);
 
   useEffect(() => {
-    if (user && !checked) {
+    if (user && !checkedOnce) {
       checkSubscription();
     } else if (!user) {
       setLoading(false);
     }
-  }, [user, checked, checkSubscription]);
+  }, [user, checkedOnce, checkSubscription]);
 
   return (
     <SubscriptionContext.Provider value={{ loading, hasActiveSubscription, subscription, isOnTrial, trialDaysLeft, checkSubscription }}>
