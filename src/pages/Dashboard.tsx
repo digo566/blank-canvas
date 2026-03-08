@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DollarSign, Package, ShoppingBag, TrendingUp, ExternalLink, Copy, Star } from "lucide-react";
+import { DollarSign, Package, ShoppingBag, TrendingUp, ExternalLink, Copy, Star, MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
