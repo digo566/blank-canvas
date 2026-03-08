@@ -430,15 +430,26 @@ IMPORTANTE:
             }
           }
           if (orderData.notes && orderData.notes.trim()) noteParts.push(`📝 Obs: ${orderData.notes.trim()}`);
+          
+          // Handle coupon
+          const couponDiscount = Number(orderData.coupon_discount || 0);
+          const couponId = orderData.coupon_id || null;
+          if (orderData.coupon_code && couponDiscount > 0) {
+            noteParts.push(`🎟️ Cupom: ${orderData.coupon_code} (-R$ ${couponDiscount.toFixed(2)})`);
+          }
           noteParts.push("📱 Pedido via Atendente Virtual");
 
           // 3. Create order
+          const orderDeliveryFee = Number(orderData.delivery_fee || 0);
           const { data: newOrder, error: orderError } = await supabase
             .from("orders")
             .insert({
               restaurant_id: restaurantId,
               client_id: clientId,
               total_amount: totalAmount,
+              delivery_fee: orderDeliveryFee,
+              coupon_id: couponId,
+              coupon_discount: couponDiscount,
               payment_method: paymentMethod,
               needs_change: orderData.needs_change || false,
               change_amount: orderData.change_amount || null,
