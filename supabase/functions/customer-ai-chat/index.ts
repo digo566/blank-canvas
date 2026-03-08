@@ -369,7 +369,19 @@ IMPORTANTE:
           const noteParts: string[] = [];
           noteParts.push(`👤 Cliente: ${sanitizedName}`);
           noteParts.push(`📞 Tel: ${sanitizedPhone}`);
-          noteParts.push(`📍 Endereço: ${sanitizedAddress}`);
+          const deliveryType = orderData.delivery_type || "delivery";
+          if (deliveryType === "pickup") {
+            noteParts.push("🏪 Retirada no local");
+          } else {
+            noteParts.push(`📍 Endereço: ${sanitizedAddress}`);
+            if (orderData.delivery_neighborhood) {
+              noteParts.push(`🏘️ Bairro: ${orderData.delivery_neighborhood}`);
+            }
+            const deliveryFee = Number(orderData.delivery_fee || 0);
+            if (deliveryFee > 0) {
+              noteParts.push(`🛵 Taxa de entrega: R$ ${deliveryFee.toFixed(2)}`);
+            }
+          }
           if (orderData.notes && orderData.notes.trim()) noteParts.push(`📝 Obs: ${orderData.notes.trim()}`);
           noteParts.push("📱 Pedido via Atendente Virtual");
 
