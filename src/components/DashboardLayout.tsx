@@ -1,11 +1,9 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { User } from "@supabase/supabase-js";
-import { useSubscription } from "@/hooks/useSubscription";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/NavLink";
-import { Badge } from "@/components/ui/badge";
 import { 
   LayoutDashboard, Package, ShoppingBag, Users, LogOut, Menu,
   ShoppingCart, BarChart3, Settings, Crown, AlertTriangle
@@ -15,6 +13,7 @@ import { toast } from "sonner";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useOrderNotifications } from "@/hooks/useOrderNotifications";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -22,32 +21,17 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuth();
+  const { isAdmin } = useAdminCheck();
+  const { loading: subLoading, hasActiveSubscription, isOnTrial, trialDaysLeft } = useSubscriptionContext();
 
   useOrderNotifications();
-  const { isAdmin } = useAdminCheck();
-  const { loading: subLoading, hasActiveSubscription, isOnTrial, trialDaysLeft } = useSubscription();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
-        if (!session?.user) navigate("/auth");
-      }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (!session?.user) navigate("/auth");
-      setLoading(false);
-    }).catch(() => {
-      setLoading(false);
+    if (!loading && !user) {
       navigate("/auth");
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    }
+  }, [loading, user, navigate]);
 
   const handleLogout = async () => {
     try {
@@ -91,6 +75,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       </div>
     );
   }
+
+  if (!user) return null;
 
   if (!isAdmin && !hasActiveSubscription) {
     navigate("/subscription");

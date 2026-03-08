@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 
 // Eager load: landing, auth, and public store (critical paths)
 import Index from "./pages/Index";
@@ -44,30 +46,34 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AuthRecoveryListener />
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/customers" element={<Customers />} />
-            <Route path="/abandoned-carts" element={<AbandonedCarts />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/finance" element={<Finance />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/track" element={<TrackOrder />} />
-            <Route path="/store/:restaurantId" element={<PublicStore />} />
-            <Route path="/r/:restaurantId" element={<PublicStore />} />
-            <Route path="/chat/:restaurantId" element={<AIAttendant />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/subscription" element={<Subscription />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
+        <AuthProvider>
+          <SubscriptionProvider>
+            <AuthRecoveryListener />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/customers" element={<Customers />} />
+                <Route path="/abandoned-carts" element={<AbandonedCarts />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/finance" element={<Finance />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/track" element={<TrackOrder />} />
+                <Route path="/store/:restaurantId" element={<PublicStore />} />
+                <Route path="/r/:restaurantId" element={<PublicStore />} />
+                <Route path="/chat/:restaurantId" element={<AIAttendant />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/subscription" element={<Subscription />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </SubscriptionProvider>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
