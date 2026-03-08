@@ -251,9 +251,6 @@ const Settings = () => {
                       onChange={(e) => setProfile({ ...profile, min_delivery_time: parseInt(e.target.value) || 0 })}
                       placeholder="30"
                     />
-                    <p className="text-sm text-muted-foreground">
-                      Ex: 30 para "30 min"
-                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="max_delivery_time">Tempo Máximo (minutos)</Label>
@@ -265,9 +262,6 @@ const Settings = () => {
                       onChange={(e) => setProfile({ ...profile, max_delivery_time: parseInt(e.target.value) || 0 })}
                       placeholder="60"
                     />
-                    <p className="text-sm text-muted-foreground">
-                      Ex: 60 para "1h" (será exibido como "30-60 min" ou "30 min - 1h")
-                    </p>
                   </div>
                 </div>
                 <div className="p-4 bg-muted rounded-lg">
@@ -282,6 +276,8 @@ const Settings = () => {
                 </Button>
               </CardContent>
             </Card>
+
+            <DeliveryZonesManager />
           </TabsContent>
 
           <TabsContent value="hours" className="space-y-4">
