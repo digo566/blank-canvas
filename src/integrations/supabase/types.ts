@@ -313,6 +313,54 @@ export type Database = {
         }
         Relationships: []
       }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string | null
+          current_uses: number
+          description: string | null
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          min_order_amount: number | null
+          restaurant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          current_uses?: number
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_order_amount?: number | null
+          restaurant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          current_uses?: number
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_order_amount?: number | null
+          restaurant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       delivery_zones: {
         Row: {
           created_at: string | null
@@ -716,8 +764,11 @@ export type Database = {
           cart_id: string | null
           change_amount: number | null
           client_id: string | null
+          coupon_discount: number | null
+          coupon_id: string | null
           created_at: string | null
           delivered_at: string | null
+          delivery_fee: number | null
           id: string
           needs_change: boolean | null
           notes: string | null
@@ -734,8 +785,11 @@ export type Database = {
           cart_id?: string | null
           change_amount?: number | null
           client_id?: string | null
+          coupon_discount?: number | null
+          coupon_id?: string | null
           created_at?: string | null
           delivered_at?: string | null
+          delivery_fee?: number | null
           id?: string
           needs_change?: boolean | null
           notes?: string | null
@@ -752,8 +806,11 @@ export type Database = {
           cart_id?: string | null
           change_amount?: number | null
           client_id?: string | null
+          coupon_discount?: number | null
+          coupon_id?: string | null
           created_at?: string | null
           delivered_at?: string | null
+          delivery_fee?: number | null
           id?: string
           needs_change?: boolean | null
           notes?: string | null
@@ -779,6 +836,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
             referencedColumns: ["id"]
           },
         ]
