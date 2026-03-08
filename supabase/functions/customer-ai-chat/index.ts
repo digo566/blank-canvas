@@ -548,6 +548,41 @@ IMPORTANTE:
             }
 
             console.log("Order created successfully:", newOrder.id, "tracking:", orderTrackingCode);
+
+            // Update loyalty progress
+            if (loyaltyConfig && sanitizedPhone) {
+              try {
+                const { data: existingProgress } = await supabase
+                  .from("loyalty_progress")
+                  .select("id, total_spent, rewards_earned")
+                  .eq("restaurant_id", restaurantId)
+                  .eq("phone", sanitizedPhone)
+                  .maybeSingle();
+
+                const orderTotal = totalAmount;
+                if (existingProgress) {
+                  const newTotal = Number(existingProgress.total_spent) + orderTotal;
+                  const newRewards = Math.floor(newTotal / Number(loyaltyConfig.spend_threshold));
+                  await supabase.from("loyalty_progress").update({
+                    total_spent: newTotal,
+                    rewards_earned: newRewards,
+                    client_id: clientId,
+                    updated_at: new Date().toISOString(),
+                  }).eq("id", existingProgress.id);
+                } else {
+                  const newRewards = Math.floor(orderTotal / Number(loyaltyConfig.spend_threshold));
+                  await supabase.from("loyalty_progress").insert({
+                    restaurant_id: restaurantId,
+                    client_id: clientId,
+                    phone: sanitizedPhone,
+                    total_spent: orderTotal,
+                    rewards_earned: newRewards,
+                  });
+                }
+              } catch (loyaltyError) {
+                console.error("Error updating loyalty:", loyaltyError);
+              }
+            }
           }
         }
       } catch (parseError) {
