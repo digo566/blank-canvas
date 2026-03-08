@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, Zap, Shield, BarChart3, Smartphone, Clock } from "lucide-react";
+import { DifferentialsSection } from "@/components/landing/DifferentialsSection";
 import grapeLogo from "@/assets/grape-logo.png";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -243,6 +244,8 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      <DifferentialsSection />
 
       <section className="relative z-10 bg-gradient-to-b from-[hsl(270,65%,12%)] to-[hsl(270,65%,18%)] py-16 md:py-24">
         <div className="container">
