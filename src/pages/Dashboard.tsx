@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DollarSign, Package, ShoppingBag, TrendingUp, ExternalLink, Copy, Star } from "lucide-react";
+import { DollarSign, Package, ShoppingBag, TrendingUp, ExternalLink, Copy, Star, MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
@@ -33,10 +33,16 @@ const Dashboard = () => {
   const [userId, setUserId] = useState<string>("");
 
   const storeUrl = `${window.location.origin}/r/${userId}`;
+  const chatUrl = `${window.location.origin}/chat/${userId}`;
 
   const copyStoreUrl = () => {
     navigator.clipboard.writeText(storeUrl);
-    toast.success("Link copiado!");
+    toast.success("Link da loja copiado!");
+  };
+
+  const copyChatUrl = () => {
+    navigator.clipboard.writeText(chatUrl);
+    toast.success("Link do atendente copiado!");
   };
 
   useEffect(() => {
@@ -173,6 +179,26 @@ const Dashboard = () => {
               <Copy className="w-4 h-4" />
             </Button>
             <Button onClick={() => window.open(storeUrl, "_blank")}>
+              Abrir
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* AI Attendant Link Card */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <MessageCircle className="w-4 h-4 text-primary" />
+              Link do Atendente Virtual
+            </CardTitle>
+            <CardDescription>Envie para seus clientes fazerem pedidos via chat com IA</CardDescription>
+          </CardHeader>
+          <CardContent className="flex gap-2">
+            <Input value={chatUrl} readOnly className="font-mono text-sm" />
+            <Button onClick={copyChatUrl} variant="outline" size="icon">
+              <Copy className="w-4 h-4" />
+            </Button>
+            <Button onClick={() => window.open(chatUrl, "_blank")}>
               Abrir
             </Button>
           </CardContent>
