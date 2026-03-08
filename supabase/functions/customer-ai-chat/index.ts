@@ -188,11 +188,16 @@ REGRAS IMPORTANTES:
 }
 \`\`\`
 
-IMPORTANTE: O bloco json_order deve ser incluído APENAS quando o cliente CONFIRMAR o pedido. NÃO inclua antes da confirmação.
+IMPORTANTE: 
+- O bloco json_order deve ser incluído APENAS quando o cliente CONFIRMAR o pedido. NÃO inclua antes da confirmação.
+- O campo "customer_phone" DEVE conter APENAS números (sem +55, sem traços, sem parênteses). Exemplo: "85999998888" (DDD + número).
+- O campo "customer_address" DEVE ser o endereço completo e organizado: "Rua, Número, Bairro, Complemento - Cidade".
+- Os preços no JSON devem ser números (não strings), usando ponto como separador decimal.
+- O "total_amount" deve ser a soma exata de todos os itens (quantidade × preço unitário + opções).
 
-7. Se perguntarem algo fora do contexto do restaurante, educadamente redirecione para o cardápio.
-8. Use emojis de forma moderada para deixar a conversa mais agradável.
-9. SEMPRE responda em português brasileiro.`;
+9. Se perguntarem algo fora do contexto do restaurante, educadamente redirecione para o cardápio.
+10. Use emojis de forma moderada para deixar a conversa mais agradável.
+11. SEMPRE responda em português brasileiro.`;
 
     // Build Gemini messages
     const geminiContents = [];
