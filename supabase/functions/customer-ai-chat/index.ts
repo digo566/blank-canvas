@@ -179,6 +179,7 @@ ${profile?.phone ? `- Telefone: ${profile.phone}` : ''}
 - ${deliveryModeText}
 ${deliveryZonesText}
 ${couponsText}
+${loyaltyText}
 
 CARDÁPIO DISPONÍVEL:
 ${menuText || 'Nenhum produto disponível no momento.'}
