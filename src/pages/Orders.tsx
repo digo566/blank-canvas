@@ -69,6 +69,7 @@ const statusLabels: Record<string, string> = {
 };
 
 const Orders = () => {
+  const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
