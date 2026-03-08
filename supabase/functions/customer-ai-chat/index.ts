@@ -131,25 +131,40 @@ ${JSON.stringify(optionItemsJson)}
 REGRAS IMPORTANTES:
 1. Só ofereça produtos que estão no cardápio acima. NUNCA invente produtos.
 2. Ajude o cliente a escolher, sugira combinações e explique os produtos.
-3. ANTES de finalizar o pedido, você DEVE coletar TODAS estas informações obrigatórias:
-   - **Nome completo** do cliente
-   - **Telefone/WhatsApp** do cliente  
-   - **Endereço completo** de entrega (rua, número, bairro, complemento se houver)
-   - **Itens do pedido** com quantidades e opções escolhidas
-   - **Forma de pagamento**: Pix, Dinheiro ou Cartão
-   - Se for Dinheiro, perguntar se **precisa de troco** e para quanto
-   - **Observações** do pedido (alguma restrição, alergia, etc.)
+3. ANTES de finalizar o pedido, você DEVE coletar TODAS estas informações obrigatórias, uma por vez se necessário:
+   a) **Nome completo** do cliente
+   b) **Telefone/WhatsApp** do cliente - DEVE ter DDD + número (ex: 85999998888). Se o cliente enviar sem DDD, PEÇA o DDD. Sempre salve no formato com DDD (11 dígitos).
+   c) **Endereço COMPLETO** de entrega - colete SEPARADAMENTE se necessário:
+      - Rua/Avenida com número
+      - Bairro
+      - Complemento (apto, bloco, referência) - pergunte mesmo que pareça simples
+      - Cidade (se necessário)
+   d) **Itens do pedido** com quantidades e opções/observações de cada item
+   e) **Forma de pagamento**: Pix, Dinheiro ou Cartão
+   f) Se for Dinheiro, perguntar se **precisa de troco** e para quanto
+   g) **Observações** gerais do pedido (alergia, restrição, etc.)
 
-4. Se o cliente não fornecer alguma informação obrigatória, PERGUNTE antes de confirmar.
-5. Faça um RESUMO COMPLETO do pedido antes de confirmar, incluindo todos os dados coletados.
-6. Quando o cliente CONFIRMAR o pedido (disser "sim", "confirmo", "pode fechar", etc.), ALÉM da mensagem de confirmação, adicione no FINAL da sua resposta um bloco JSON no seguinte formato EXATO:
+4. Se o cliente não fornecer alguma informação obrigatória, PERGUNTE antes de confirmar. NÃO pule nenhum campo.
+5. TELEFONE: Se o cliente informar um número com menos de 10 dígitos, peça para confirmar com DDD. Salve APENAS números (sem traços, parênteses ou espaços). Formato esperado: DDD + número = 10 ou 11 dígitos.
+6. ENDEREÇO: Sempre monte o endereço completo no formato: "Rua X, Nº Y, Bairro Z, Complemento W". Se faltar alguma parte, pergunte.
+7. Faça um RESUMO COMPLETO e ORGANIZADO do pedido antes de confirmar, listando:
+   - 👤 Nome
+   - 📞 Telefone
+   - 📍 Endereço completo (rua, número, bairro, complemento)
+   - 🛒 Itens (quantidade x nome - preço)
+   - 💰 Total
+   - 💳 Forma de pagamento
+   - 📝 Observações
+   
+   Peça ao cliente para conferir TODOS os dados antes de confirmar.
+8. Quando o cliente CONFIRMAR o pedido (disser "sim", "confirmo", "pode fechar", etc.), ALÉM da mensagem de confirmação, adicione no FINAL da sua resposta um bloco JSON no seguinte formato EXATO:
 
 \`\`\`json_order
 {
   "order_confirmed": true,
-  "customer_name": "Nome do Cliente",
-  "customer_phone": "telefone",
-  "customer_address": "endereço completo",
+  "customer_name": "Nome Completo do Cliente",
+  "customer_phone": "85999998888",
+  "customer_address": "Rua Exemplo, 123, Bairro Centro, Apto 101 - Cidade",
   "payment_method": "pix" ou "dinheiro" ou "cartao",
   "needs_change": false,
   "change_amount": 0,
@@ -173,11 +188,16 @@ REGRAS IMPORTANTES:
 }
 \`\`\`
 
-IMPORTANTE: O bloco json_order deve ser incluído APENAS quando o cliente CONFIRMAR o pedido. NÃO inclua antes da confirmação.
+IMPORTANTE: 
+- O bloco json_order deve ser incluído APENAS quando o cliente CONFIRMAR o pedido. NÃO inclua antes da confirmação.
+- O campo "customer_phone" DEVE conter APENAS números (sem +55, sem traços, sem parênteses). Exemplo: "85999998888" (DDD + número).
+- O campo "customer_address" DEVE ser o endereço completo e organizado: "Rua, Número, Bairro, Complemento - Cidade".
+- Os preços no JSON devem ser números (não strings), usando ponto como separador decimal.
+- O "total_amount" deve ser a soma exata de todos os itens (quantidade × preço unitário + opções).
 
-7. Se perguntarem algo fora do contexto do restaurante, educadamente redirecione para o cardápio.
-8. Use emojis de forma moderada para deixar a conversa mais agradável.
-9. SEMPRE responda em português brasileiro.`;
+9. Se perguntarem algo fora do contexto do restaurante, educadamente redirecione para o cardápio.
+10. Use emojis de forma moderada para deixar a conversa mais agradável.
+11. SEMPRE responda em português brasileiro.`;
 
     // Build Gemini messages
     const geminiContents = [];
@@ -227,33 +247,43 @@ IMPORTANTE: O bloco json_order deve ser incluído APENAS quando o cliente CONFIR
         const orderData = JSON.parse(jsonOrderMatch[1].trim());
         
         if (orderData.order_confirmed && orderData.items?.length > 0) {
-          console.log("Order confirmed, creating order:", JSON.stringify(orderData));
+          // Sanitize phone: keep only digits
+          const sanitizedPhone = (orderData.customer_phone || "").replace(/\D/g, "");
+          const sanitizedName = (orderData.customer_name || "").trim();
+          const sanitizedAddress = (orderData.customer_address || "").trim();
+          
+          console.log("Order confirmed. Name:", sanitizedName, "Phone:", sanitizedPhone, "Address:", sanitizedAddress);
 
           // 1. Find or create client
           let clientId: string | null = null;
+          
+          // Try to find by phone (exact match and also with +55 prefix)
+          const phonesToSearch = [sanitizedPhone];
+          if (sanitizedPhone.length === 11 || sanitizedPhone.length === 10) {
+            phonesToSearch.push(`+55${sanitizedPhone}`);
+          }
           
           const { data: existingClients } = await supabase
             .from("clients")
             .select("id")
             .eq("restaurant_id", restaurantId)
-            .eq("phone", orderData.customer_phone)
+            .in("phone", phonesToSearch)
             .limit(1);
 
           if (existingClients && existingClients.length > 0) {
             clientId = existingClients[0].id;
-            // Update client info
             await supabase.from("clients").update({
-              name: orderData.customer_name,
-              address: orderData.customer_address,
+              name: sanitizedName,
+              address: sanitizedAddress,
             }).eq("id", clientId);
           } else {
             const { data: newClient, error: clientError } = await supabase
               .from("clients")
               .insert({
                 restaurant_id: restaurantId,
-                name: orderData.customer_name,
-                phone: orderData.customer_phone,
-                address: orderData.customer_address,
+                name: sanitizedName,
+                phone: sanitizedPhone,
+                address: sanitizedAddress,
               })
               .select("id")
               .single();
@@ -294,12 +324,12 @@ IMPORTANTE: O bloco json_order deve ser incluído APENAS quando o cliente CONFIR
           };
           paymentMethod = pmMap[paymentMethod.toLowerCase()] || paymentMethod;
 
-          // Build notes
+          // Build notes - organized and clear
           const noteParts: string[] = [];
-          if (orderData.customer_name) noteParts.push(`Cliente: ${orderData.customer_name}`);
-          if (orderData.customer_phone) noteParts.push(`Tel: ${orderData.customer_phone}`);
-          if (orderData.customer_address) noteParts.push(`Endereço: ${orderData.customer_address}`);
-          if (orderData.notes) noteParts.push(`Obs: ${orderData.notes}`);
+          noteParts.push(`👤 Cliente: ${sanitizedName}`);
+          noteParts.push(`📞 Tel: ${sanitizedPhone}`);
+          noteParts.push(`📍 Endereço: ${sanitizedAddress}`);
+          if (orderData.notes && orderData.notes.trim()) noteParts.push(`📝 Obs: ${orderData.notes.trim()}`);
           noteParts.push("📱 Pedido via Atendente Virtual");
 
           // 3. Create order
