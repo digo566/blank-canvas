@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/ImageUpload";
+import { DeliveryZonesManager } from "@/components/settings/DeliveryZonesManager";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
