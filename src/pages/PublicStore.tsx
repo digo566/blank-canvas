@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ShoppingCart, Store, Package } from "lucide-react";
+import { ShoppingCart, Store, Package, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { CartModal } from "@/components/CartModal";
 import { ProductOptionsDialog } from "@/components/ProductOptionsDialog";
