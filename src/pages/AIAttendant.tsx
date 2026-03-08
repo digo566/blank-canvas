@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Bot, Send, Store, User } from "lucide-react";
+import { ArrowLeft, Bot, Send, Store, User, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 
@@ -161,7 +161,19 @@ const AIAttendant = () => {
               >
                 {msg.role === "assistant" ? (
                   <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-1 [&>p:last-child]:mb-0">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    <ReactMarkdown>{msg.content.replace(/\[TRACK:[A-Z0-9]+\]/g, "")}</ReactMarkdown>
+                    {(() => {
+                      const trackMatch = msg.content.match(/\[TRACK:([A-Z0-9]+)\]/);
+                      if (!trackMatch) return null;
+                      return (
+                        <Link to={`/track?code=${trackMatch[1]}`} className="no-underline">
+                          <Button className="mt-3 w-full gap-2" size="sm">
+                            <MapPin className="h-4 w-4" />
+                            Acompanhar Pedido
+                          </Button>
+                        </Link>
+                      );
+                    })()}
                   </div>
                 ) : (
                   <p>{msg.content}</p>

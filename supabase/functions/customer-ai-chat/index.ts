@@ -426,7 +426,7 @@ IMPORTANTE:
 
       // Append tracking code info if order was created
       if (orderCreated && orderTrackingCode) {
-        aiResponse += `\n\n📋 **Código de rastreio do seu pedido: ${orderTrackingCode}**\nVocê pode acompanhar seu pedido usando este código!`;
+        aiResponse += `\n\n📋 **Código de rastreio do seu pedido: ${orderTrackingCode}**\n\nVocê pode acompanhar seu pedido clicando no botão abaixo! 👇\n\n[TRACK:${orderTrackingCode}]`;
       }
     }
 
