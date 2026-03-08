@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/ImageUpload";
 import { DeliveryZonesManager } from "@/components/settings/DeliveryZonesManager";
 import { CouponsManager } from "@/components/settings/CouponsManager";
+import { FiscalSettingsManager } from "@/components/settings/FiscalSettingsManager";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -164,6 +165,7 @@ const Settings = () => {
             <TabsTrigger value="delivery">Entrega</TabsTrigger>
             <TabsTrigger value="hours">Horários</TabsTrigger>
             <TabsTrigger value="coupons">Cupons</TabsTrigger>
+            <TabsTrigger value="fiscal">Fiscal</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-4">
@@ -330,6 +332,10 @@ const Settings = () => {
 
           <TabsContent value="coupons" className="space-y-4">
             <CouponsManager />
+          </TabsContent>
+
+          <TabsContent value="fiscal" className="space-y-4">
+            <FiscalSettingsManager />
           </TabsContent>
         </Tabs>
       </div>

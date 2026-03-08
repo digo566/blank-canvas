@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Search, ShoppingBag, MessageCircle } from "lucide-react";
+import { PreNotaFiscal } from "@/components/orders/PreNotaFiscal";
 
 interface Order {
   id: string;
@@ -406,6 +407,9 @@ const Orders = () => {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Pre-Nota Fiscal */}
+                <PreNotaFiscal order={selectedOrder} />
 
                 {selectedOrder.clients?.phone && (
                   <Button
