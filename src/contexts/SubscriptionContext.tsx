@@ -39,6 +39,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const [isOnTrial, setIsOnTrial] = useState(false);
   const [trialDaysLeft, setTrialDaysLeft] = useState(0);
   const [checked, setChecked] = useState(false);
+  const [checkedOnce, setCheckedOnce] = useState(false);
 
   const checkSubscription = useCallback(async () => {
     if (!user) {
