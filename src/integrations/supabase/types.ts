@@ -313,6 +313,36 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_zones: {
+        Row: {
+          created_at: string | null
+          delivery_fee: number
+          id: string
+          is_active: boolean
+          neighborhood_name: string
+          restaurant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          delivery_fee?: number
+          id?: string
+          is_active?: boolean
+          neighborhood_name: string
+          restaurant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          delivery_fee?: number
+          id?: string
+          is_active?: boolean
+          neighborhood_name?: string
+          restaurant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       expense_categories: {
         Row: {
           created_at: string | null
@@ -913,6 +943,7 @@ export type Database = {
         Row: {
           cover_url: string | null
           created_at: string | null
+          delivery_mode: string
           id: string
           logo_url: string | null
           max_delivery_time: number | null
@@ -927,6 +958,7 @@ export type Database = {
         Insert: {
           cover_url?: string | null
           created_at?: string | null
+          delivery_mode?: string
           id: string
           logo_url?: string | null
           max_delivery_time?: number | null
@@ -941,6 +973,7 @@ export type Database = {
         Update: {
           cover_url?: string | null
           created_at?: string | null
+          delivery_mode?: string
           id?: string
           logo_url?: string | null
           max_delivery_time?: number | null
