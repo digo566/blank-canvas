@@ -71,6 +71,8 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [editingDeliveryFee, setEditingDeliveryFee] = useState<string | null>(null);
+  const [deliveryFeeValue, setDeliveryFeeValue] = useState("");
 
   useEffect(() => {
     loadOrders();
