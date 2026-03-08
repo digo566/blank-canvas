@@ -30,10 +30,11 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const [profileRes, productsRes, categoriesRes] = await Promise.all([
-      supabase.from("profiles").select("restaurant_name, phone, min_delivery_time, max_delivery_time, opening_hours").eq("id", restaurantId).single(),
+    const [profileRes, productsRes, categoriesRes, zonesRes] = await Promise.all([
+      supabase.from("profiles").select("restaurant_name, phone, min_delivery_time, max_delivery_time, opening_hours, delivery_mode").eq("id", restaurantId).single(),
       supabase.from("products").select("id, name, description, price, category_id, available").eq("restaurant_id", restaurantId).eq("available", true),
       supabase.from("product_categories").select("id, name").eq("restaurant_id", restaurantId).order("display_order"),
+      supabase.from("delivery_zones").select("neighborhood_name, delivery_fee, is_active").eq("restaurant_id", restaurantId).eq("is_active", true).order("neighborhood_name"),
     ]);
 
     const profile = profileRes.data;
