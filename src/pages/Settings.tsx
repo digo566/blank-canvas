@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { ImageUpload } from "@/components/ImageUpload";
 import { DeliveryZonesManager } from "@/components/settings/DeliveryZonesManager";
+import { CouponsManager } from "@/components/settings/CouponsManager";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -162,6 +163,7 @@ const Settings = () => {
             <TabsTrigger value="branding">Marca</TabsTrigger>
             <TabsTrigger value="delivery">Entrega</TabsTrigger>
             <TabsTrigger value="hours">Horários</TabsTrigger>
+            <TabsTrigger value="coupons">Cupons</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-4">
@@ -324,6 +326,10 @@ const Settings = () => {
                 </Button>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="coupons" className="space-y-4">
+            <CouponsManager />
           </TabsContent>
         </Tabs>
       </div>

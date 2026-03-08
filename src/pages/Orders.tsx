@@ -16,6 +16,8 @@ interface Order {
   id: string;
   tracking_code: string;
   total_amount: number;
+  delivery_fee: number | null;
+  coupon_discount: number | null;
   status: string;
   created_at: string;
   payment_method: string | null;
@@ -69,6 +71,8 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [editingDeliveryFee, setEditingDeliveryFee] = useState<string | null>(null);
+  const [deliveryFeeValue, setDeliveryFeeValue] = useState("");
 
   useEffect(() => {
     loadOrders();
@@ -113,6 +117,31 @@ const Orders = () => {
       }
     } catch (error: any) {
       toast.error("Erro ao atualizar status");
+    }
+  };
+
+  const updateDeliveryFee = async (orderId: string, fee: number) => {
+    try {
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+      
+      const oldFee = Number(order.delivery_fee || 0);
+      const newTotal = Number(order.total_amount) - oldFee + fee;
+      
+      const { error } = await supabase
+        .from("orders")
+        .update({ delivery_fee: fee, total_amount: newTotal })
+        .eq("id", orderId);
+
+      if (error) throw error;
+      toast.success("Taxa de entrega atualizada!");
+      loadOrders();
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder(prev => prev ? { ...prev, delivery_fee: fee, total_amount: newTotal } : null);
+      }
+      setEditingDeliveryFee(null);
+    } catch {
+      toast.error("Erro ao atualizar taxa");
     }
   };
 
@@ -292,7 +321,64 @@ const Orders = () => {
                 {selectedOrder.notes && (
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">📝 Observações</p>
-                    <p className="text-sm bg-muted p-2 rounded-md">{selectedOrder.notes}</p>
+                    <p className="text-sm bg-muted p-2 rounded-md whitespace-pre-line">{selectedOrder.notes}</p>
+                  </div>
+                )}
+
+                {/* Delivery Fee */}
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground">🛵 Taxa de Entrega</p>
+                  {editingDeliveryFee === selectedOrder.id ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">R$</span>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.50"
+                        value={deliveryFeeValue}
+                        onChange={(e) => setDeliveryFeeValue(e.target.value)}
+                        className="w-24 h-8 text-sm"
+                        autoFocus
+                      />
+                      <Button
+                        size="sm"
+                        className="h-8 text-xs"
+                        onClick={() => updateDeliveryFee(selectedOrder.id, parseFloat(deliveryFeeValue) || 0)}
+                      >
+                        Salvar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 text-xs"
+                        onClick={() => setEditingDeliveryFee(null)}
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm">R$ {Number(selectedOrder.delivery_fee || 0).toFixed(2)}</p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-6 text-xs px-2"
+                        onClick={() => {
+                          setEditingDeliveryFee(selectedOrder.id);
+                          setDeliveryFeeValue(String(selectedOrder.delivery_fee || 0));
+                        }}
+                      >
+                        Editar
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Coupon Discount */}
+                {selectedOrder.coupon_discount && Number(selectedOrder.coupon_discount) > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">🎟️ Desconto Cupom</p>
+                    <p className="text-sm text-green-600">-R$ {Number(selectedOrder.coupon_discount).toFixed(2)}</p>
                   </div>
                 )}
 

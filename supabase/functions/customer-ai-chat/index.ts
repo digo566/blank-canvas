@@ -30,17 +30,23 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const [profileRes, productsRes, categoriesRes, zonesRes] = await Promise.all([
+    const [profileRes, productsRes, categoriesRes, zonesRes, couponsRes] = await Promise.all([
       supabase.from("profiles").select("restaurant_name, phone, min_delivery_time, max_delivery_time, opening_hours, delivery_mode").eq("id", restaurantId).single(),
       supabase.from("products").select("id, name, description, price, category_id, available").eq("restaurant_id", restaurantId).eq("available", true),
       supabase.from("product_categories").select("id, name").eq("restaurant_id", restaurantId).order("display_order"),
       supabase.from("delivery_zones").select("neighborhood_name, delivery_fee, is_active").eq("restaurant_id", restaurantId).eq("is_active", true).order("neighborhood_name"),
+      supabase.from("coupons").select("id, code, description, discount_type, discount_value, min_order_amount, max_uses, current_uses, is_active, expires_at").eq("restaurant_id", restaurantId).eq("is_active", true),
     ]);
 
     const profile = profileRes.data;
     const products = productsRes.data || [];
     const categories = categoriesRes.data || [];
     const deliveryZones = zonesRes.data || [];
+    const coupons = (couponsRes.data || []).filter((c: any) => {
+      if (c.max_uses && c.current_uses >= c.max_uses) return false;
+      if (c.expires_at && new Date(c.expires_at) < new Date()) return false;
+      return true;
+    });
     const deliveryMode = profile?.delivery_mode || "delivery_and_pickup";
 
     // Fetch product options
@@ -123,6 +129,29 @@ serve(async (req) => {
       }
     }
 
+    // Build coupons text
+    let couponsText = "";
+    if (coupons.length > 0) {
+      couponsText = "\nCUPONS DE DESCONTO DISPONÍVEIS:\n";
+      for (const coupon of coupons) {
+        const discountStr = coupon.discount_type === "percentage"
+          ? `${coupon.discount_value}% de desconto`
+          : `R$ ${Number(coupon.discount_value).toFixed(2)} de desconto`;
+        couponsText += `  • ${coupon.code} - ${discountStr}`;
+        if (coupon.description) couponsText += ` (${coupon.description})`;
+        if (coupon.min_order_amount > 0) couponsText += ` - pedido mínimo R$ ${Number(coupon.min_order_amount).toFixed(2)}`;
+        couponsText += "\n";
+      }
+    }
+
+    const couponsJson = coupons.map((c: any) => ({
+      id: c.id,
+      code: c.code,
+      discount_type: c.discount_type,
+      discount_value: Number(c.discount_value),
+      min_order_amount: Number(c.min_order_amount || 0),
+    }));
+
     const deliveryModeText = deliveryMode === "delivery_only"
       ? "MODO: Apenas DELIVERY (entrega no endereço do cliente)"
       : "MODO: DELIVERY (entrega) ou RETIRADA NO LOCAL (o cliente escolhe)";
@@ -136,6 +165,7 @@ ${profile?.phone ? `- Telefone: ${profile.phone}` : ''}
 - Tempo de entrega: ${profile?.min_delivery_time || 30} a ${profile?.max_delivery_time || 60} minutos
 - ${deliveryModeText}
 ${deliveryZonesText}
+${couponsText}
 
 CARDÁPIO DISPONÍVEL:
 ${menuText || 'Nenhum produto disponível no momento.'}
@@ -145,6 +175,9 @@ ${JSON.stringify(productListJson)}
 
 OPÇÕES (referência para IDs):
 ${JSON.stringify(optionItemsJson)}
+
+CUPONS (referência para IDs):
+${JSON.stringify(couponsJson)}
 
 REGRAS IMPORTANTES:
 1. Só ofereça produtos que estão no cardápio acima. NUNCA invente produtos.
@@ -165,7 +198,15 @@ REGRAS IMPORTANTES:
    - O total do pedido deve INCLUIR a taxa de entrega.`
      : `- Não há bairros cadastrados. Colete o endereço normalmente.`}
 
-5. ANTES de finalizar o pedido, você DEVE coletar TODAS estas informações obrigatórias, uma por vez se necessário:
+5. **CUPONS DE DESCONTO**:
+   ${coupons.length > 0
+     ? `- Se o cliente perguntar sobre promoções, descontos ou cupons, informe os cupons disponíveis listados acima.
+   - Quando o cliente informar um cupom, VALIDE: verifique se o código existe na lista, se o pedido mínimo é atingido.
+   - Aplique o desconto ao total e mostre o valor original, o desconto e o total final.
+   - No JSON do pedido, inclua "coupon_code", "coupon_id" e "coupon_discount".`
+     : `- Não há cupons de desconto disponíveis no momento. Se o cliente perguntar, informe que não há promoções ativas.`}
+
+6. ANTES de finalizar o pedido, você DEVE coletar TODAS estas informações obrigatórias, uma por vez se necessário:
    a) **Nome completo** do cliente
    b) **Telefone/WhatsApp** do cliente - DEVE ter DDD + número (ex: 85999998888). Se o cliente enviar sem DDD, PEÇA o DDD. Sempre salve no formato com DDD (11 dígitos).
    ${deliveryMode === "delivery_and_pickup" ? `c) **Tipo de entrega**: Delivery ou Retirada no local` : ""}
@@ -175,24 +216,26 @@ REGRAS IMPORTANTES:
       - Complemento (apto, bloco, referência) - pergunte mesmo que pareça simples
       - Cidade (se necessário)
    ${deliveryMode === "delivery_and_pickup" ? `e)` : `d)`} **Itens do pedido** com quantidades e opções/observações de cada item
-   ${deliveryMode === "delivery_and_pickup" ? `f)` : `e)`} **Forma de pagamento**: Pix, Dinheiro ou Cartão
-   ${deliveryMode === "delivery_and_pickup" ? `g)` : `f)`} Se for Dinheiro, perguntar se **precisa de troco** e para quanto
-   ${deliveryMode === "delivery_and_pickup" ? `h)` : `g)`} **Observações** gerais do pedido (alergia, restrição, etc.)
+   ${deliveryMode === "delivery_and_pickup" ? `f)` : `e)`} **Cupom de desconto** (pergunte se o cliente tem algum cupom)
+   ${deliveryMode === "delivery_and_pickup" ? `g)` : `f)`} **Forma de pagamento**: Pix, Dinheiro ou Cartão
+   ${deliveryMode === "delivery_and_pickup" ? `h)` : `g)`} Se for Dinheiro, perguntar se **precisa de troco** e para quanto
+   ${deliveryMode === "delivery_and_pickup" ? `i)` : `h)`} **Observações** gerais do pedido (alergia, restrição, etc.)
 
-6. Se o cliente não fornecer alguma informação obrigatória, PERGUNTE antes de confirmar. NÃO pule nenhum campo.
-7. TELEFONE: Se o cliente informar um número com menos de 10 dígitos, peça para confirmar com DDD. Salve APENAS números (sem traços, parênteses ou espaços). Formato esperado: DDD + número = 10 ou 11 dígitos.
-8. ENDEREÇO: Sempre monte o endereço completo no formato: "Rua X, Nº Y, Bairro Z, Complemento W". Se faltar alguma parte, pergunte.
-9. Faça um RESUMO COMPLETO e ORGANIZADO do pedido antes de confirmar, listando:
+7. Se o cliente não fornecer alguma informação obrigatória, PERGUNTE antes de confirmar. NÃO pule nenhum campo.
+8. TELEFONE: Se o cliente informar um número com menos de 10 dígitos, peça para confirmar com DDD. Salve APENAS números (sem traços, parênteses ou espaços). Formato esperado: DDD + número = 10 ou 11 dígitos.
+9. ENDEREÇO: Sempre monte o endereço completo no formato: "Rua X, Nº Y, Bairro Z, Complemento W". Se faltar alguma parte, pergunte.
+10. Faça um RESUMO COMPLETO e ORGANIZADO do pedido antes de confirmar, listando:
    - 👤 Nome
    - 📞 Telefone
    - ${deliveryMode === "delivery_and_pickup" ? "🚚 Tipo: Delivery ou Retirada\n   - " : ""}📍 Endereço completo (rua, número, bairro, complemento) ${deliveryMode === "delivery_and_pickup" ? "- se delivery" : ""}
    - 🛒 Itens (quantidade x nome - preço)
-   ${deliveryZones.length > 0 ? "- 🏘️ Bairro: [nome] - Taxa: R$ X,XX\n   " : ""}- 💰 Total ${deliveryZones.length > 0 ? "(itens + taxa de entrega)" : ""}
+   ${deliveryZones.length > 0 ? "- 🏘️ Bairro: [nome] - Taxa: R$ X,XX\n   " : ""}- 🎟️ Cupom (se aplicado): desconto de X
+   - 💰 Total ${deliveryZones.length > 0 ? "(itens + taxa de entrega - desconto)" : ""}
    - 💳 Forma de pagamento
    - 📝 Observações
    
    Peça ao cliente para conferir TODOS os dados antes de confirmar.
-10. Quando o cliente CONFIRMAR o pedido (disser "sim", "confirmo", "pode fechar", etc.), ALÉM da mensagem de confirmação, adicione no FINAL da sua resposta um bloco JSON no seguinte formato EXATO:
+11. Quando o cliente CONFIRMAR o pedido (disser "sim", "confirmo", "pode fechar", etc.), ALÉM da mensagem de confirmação, adicione no FINAL da sua resposta um bloco JSON no seguinte formato EXATO:
 
 \`\`\`json_order
 {
@@ -203,6 +246,9 @@ REGRAS IMPORTANTES:
   "delivery_type": "delivery" ou "pickup",
   "delivery_fee": 5.00,
   "delivery_neighborhood": "Centro",
+  "coupon_code": "DESC10" ou null,
+  "coupon_id": "uuid-do-cupom" ou null,
+  "coupon_discount": 5.00,
   "payment_method": "pix" ou "dinheiro" ou "cartao",
   "needs_change": false,
   "change_amount": 0,
@@ -222,7 +268,7 @@ REGRAS IMPORTANTES:
       ]
     }
   ],
-  "total_amount": 17.00
+  "total_amount": 12.00
 }
 \`\`\`
 
@@ -233,12 +279,13 @@ IMPORTANTE:
 - O campo "delivery_type" deve ser "delivery" ou "pickup".
 - O campo "delivery_fee" deve ser a taxa de entrega (0 se for retirada ou bairro não cadastrado).
 - O campo "delivery_neighborhood" deve ser o nome do bairro (vazio se for retirada).
+- Os campos de cupom: "coupon_code" e "coupon_id" são null se não houver cupom. "coupon_discount" é o valor do desconto aplicado (0 se não houver).
 - Os preços no JSON devem ser números (não strings), usando ponto como separador decimal.
-- O "total_amount" deve incluir a taxa de entrega: soma dos itens + delivery_fee.
+- O "total_amount" deve ser: soma dos itens + delivery_fee - coupon_discount.
 
-11. Se perguntarem algo fora do contexto do restaurante, educadamente redirecione para o cardápio.
-12. Use emojis de forma moderada para deixar a conversa mais agradável.
-13. SEMPRE responda em português brasileiro.`;
+12. Se perguntarem algo fora do contexto do restaurante, educadamente redirecione para o cardápio.
+13. Use emojis de forma moderada para deixar a conversa mais agradável.
+14. SEMPRE responda em português brasileiro.`;
 
     // Build Gemini messages
     const geminiContents = [];
@@ -383,15 +430,26 @@ IMPORTANTE:
             }
           }
           if (orderData.notes && orderData.notes.trim()) noteParts.push(`📝 Obs: ${orderData.notes.trim()}`);
+          
+          // Handle coupon
+          const couponDiscount = Number(orderData.coupon_discount || 0);
+          const couponId = orderData.coupon_id || null;
+          if (orderData.coupon_code && couponDiscount > 0) {
+            noteParts.push(`🎟️ Cupom: ${orderData.coupon_code} (-R$ ${couponDiscount.toFixed(2)})`);
+          }
           noteParts.push("📱 Pedido via Atendente Virtual");
 
           // 3. Create order
+          const orderDeliveryFee = Number(orderData.delivery_fee || 0);
           const { data: newOrder, error: orderError } = await supabase
             .from("orders")
             .insert({
               restaurant_id: restaurantId,
               client_id: clientId,
               total_amount: totalAmount,
+              delivery_fee: orderDeliveryFee,
+              coupon_id: couponId,
+              coupon_discount: couponDiscount,
               payment_method: paymentMethod,
               needs_change: orderData.needs_change || false,
               change_amount: orderData.change_amount || null,
@@ -406,6 +464,14 @@ IMPORTANTE:
           } else {
             orderTrackingCode = newOrder.tracking_code;
             orderCreated = true;
+
+            // Increment coupon usage
+            if (couponId) {
+              await supabase.rpc("increment_coupon_usage" as any, { coupon_id_param: couponId }).catch(() => {
+                // Fallback: direct update
+                supabase.from("coupons").update({ current_uses: coupons.find((c: any) => c.id === couponId)?.current_uses + 1 || 1 }).eq("id", couponId);
+              });
+            }
 
             // 4. Create order items
             for (const item of orderData.items) {
