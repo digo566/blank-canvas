@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Bot, Send, Store, User } from "lucide-react";
+import { ArrowLeft, Bot, Send, Store, User, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 
