@@ -14,6 +14,7 @@ interface OrderForNota {
   delivery_fee: number | null;
   payment_method: string | null;
   created_at: string;
+  notes: string | null;
   clients: { name: string; phone: string; address: string | null } | null;
   order_items: { quantity: number; unit_price: number; products: { name: string } | null }[];
 }
