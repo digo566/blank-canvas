@@ -146,6 +146,7 @@ Deno.serve(async (req) => {
         phone: phone?.replace(/\D/g, ""),
         companyType: companyType || (isCompany ? "LIMITED" : null),
         incomeValue: incomeValue || 5000,
+        birthDate: birthDate || undefined,
       };
 
       console.log("Creating Asaas subaccount:", JSON.stringify(accountPayload));

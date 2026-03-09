@@ -140,6 +140,7 @@ export function PaymentSettingsManager() {
                 <div><Label>CPF ou CNPJ *</Label><Input value={form.cpfCnpj} onChange={(e) => setForm({ ...form, cpfCnpj: e.target.value })} placeholder="000.000.000-00" /></div>
                 <div><Label>Email *</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="email@exemplo.com" /></div>
                 <div><Label>Telefone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(11) 99999-9999" /></div>
+                <div><Label>Data de Nascimento *</Label><Input type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} /></div>
               </div>
               <div className="flex gap-2">
                 <Button onClick={handleCreateAccount} disabled={creating}>{creating && <Loader2 className="w-4 h-4 animate-spin mr-2" />}Criar Conta Financeira</Button>
