@@ -258,6 +258,7 @@ REGRAS IMPORTANTES:
   "order_confirmed": true,
   "customer_name": "Nome Completo do Cliente",
   "customer_phone": "85999998888",
+  "customer_cpf": "12345678901" ou null,
   "customer_address": "Rua Exemplo, 123, Bairro Centro, Apto 101 - Cidade",
   "delivery_type": "delivery" ou "pickup",
   "delivery_fee": 5.00,
