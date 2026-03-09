@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
 
     // ─── CREATE SUBACCOUNT ──────────────────────────────────
     if (action === "create-account") {
-      const { restaurantId, name, cpfCnpj, email, phone, companyType, incomeValue } = params;
+      const { restaurantId, name, cpfCnpj, email, phone, birthDate, companyType, incomeValue } = params;
       if (!restaurantId || !name || !cpfCnpj || !email) {
         return json({ error: "Campos obrigatórios: restaurantId, name, cpfCnpj, email" }, 400);
       }
@@ -146,6 +146,7 @@ Deno.serve(async (req) => {
         phone: phone?.replace(/\D/g, ""),
         companyType: companyType || (isCompany ? "LIMITED" : null),
         incomeValue: incomeValue || 5000,
+        birthDate: birthDate || undefined,
       };
 
       console.log("Creating Asaas subaccount:", JSON.stringify(accountPayload));
