@@ -51,6 +51,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { to: "/customers", icon: Users, label: "Clientes" },
     { to: "/abandoned-carts", icon: ShoppingCart, label: "Carrinhos" },
     { to: "/settings", icon: Settings, label: "Configurações" },
+    { to: "/feedback", icon: MessageSquarePlus, label: "Opiniões" },
     ...(isAdmin ? [
       { to: "/admin", icon: Crown, label: "Admin Grape" }
     ] : []),
