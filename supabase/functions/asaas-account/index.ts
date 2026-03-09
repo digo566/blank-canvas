@@ -345,17 +345,28 @@ Deno.serve(async (req) => {
         newStatus = "ativa";
       }
 
+      const onboardingUrl = account.onboardingUrl || account.accountNumber?.walletUrl || null;
+
+      // Update profile with any new info
+      const updateData: Record<string, unknown> = {};
       if (newStatus !== profile.asaas_account_status) {
+        updateData.asaas_account_status = newStatus;
+      }
+      if (onboardingUrl) {
+        updateData.asaas_onboarding_url = onboardingUrl;
+      }
+      if (Object.keys(updateData).length > 0) {
         await serviceDb
           .from("profiles")
-          .update({ asaas_account_status: newStatus })
+          .update(updateData)
           .eq("id", restaurantId);
       }
 
       return json({
         status: newStatus,
         documentStatus: account.documentStatus,
-        onboardingUrl: account.onboardingUrl,
+        onboardingUrl: onboardingUrl,
+        loginUrl: `https://www.asaas.com/login`,
       });
     }
 

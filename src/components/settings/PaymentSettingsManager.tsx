@@ -316,11 +316,17 @@ export function PaymentSettingsManager() {
               <p className="font-medium text-yellow-700">Conta criada. Verificação necessária.</p>
               <p className="text-sm text-muted-foreground">Complete o cadastro financeiro para começar a receber pagamentos (conta bancária ou chave PIX).</p>
             </div>
-            <div className="flex gap-2">
-              {accountStatus.onboardingUrl && (
+            <div className="flex flex-wrap gap-2">
+              {accountStatus.onboardingUrl ? (
                 <Button asChild>
                   <a href={accountStatus.onboardingUrl} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="w-4 h-4 mr-2" />Completar Cadastro Financeiro
+                  </a>
+                </Button>
+              ) : (
+                <Button asChild>
+                  <a href="https://www.asaas.com/login" target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="w-4 h-4 mr-2" />Acessar Painel Asaas
                   </a>
                 </Button>
               )}
