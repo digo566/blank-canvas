@@ -56,11 +56,16 @@ const Dashboard = () => {
       
       setUserId(user.id);
 
+      // Fetch recent orders only (last 90 days) for performance
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
       const { data: allOrders, error: statsError } = await supabase
         .from("orders")
         .select("total_amount, order_items(quantity, unit_price, product:products(name, cost_price, price, profit_margin))")
         .eq("restaurant_id", user.id)
-        .neq("status", "cancelled");
+        .neq("status", "cancelled")
+        .gte("created_at", ninetyDaysAgo.toISOString());
 
       if (statsError) throw statsError;
 
