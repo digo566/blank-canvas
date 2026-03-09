@@ -119,14 +119,31 @@ Deno.serve(async (req) => {
       }
 
       const cleanCpfCnpj = cpfCnpj.replace(/\D/g, "");
-      const isCompany = cleanCpfCnpj.length > 11;
+      
+      // Validate CPF (11 digits) or CNPJ (14 digits)
+      if (cleanCpfCnpj.length !== 11 && cleanCpfCnpj.length !== 14) {
+        return json({ error: `CPF deve ter 11 dígitos e CNPJ 14 dígitos. Você informou ${cleanCpfCnpj.length} dígitos.` }, 400);
+      }
+      
+      const isCompany = cleanCpfCnpj.length === 14;
+      
+      const cleanPhone = mobilePhone.replace(/\D/g, "");
+      if (cleanPhone.length < 10 || cleanPhone.length > 11) {
+        return json({ error: "Telefone inválido. Informe DDD + número (10 ou 11 dígitos)." }, 400);
+      }
+
+      const cleanEmail = email.trim().toLowerCase();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(cleanEmail)) {
+        return json({ error: "Email inválido." }, 400);
+      }
 
       // Build payload according to Asaas POST /accounts docs
       const accountPayload: Record<string, unknown> = {
-        name,
+        name: name.trim(),
         cpfCnpj: cleanCpfCnpj,
-        email,
-        mobilePhone: mobilePhone.replace(/\D/g, ""),
+        email: cleanEmail,
+        mobilePhone: cleanPhone,
         incomeValue: Number(incomeValue) || 5000,
       };
 
