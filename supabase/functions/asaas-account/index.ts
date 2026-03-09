@@ -18,7 +18,13 @@ async function asaas(path: string, method = "GET", body?: unknown) {
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
-  return res.json();
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    console.error("Asaas non-JSON response:", text);
+    return { errors: [{ description: `HTTP ${res.status}: ${text.substring(0, 200)}` }] };
+  }
 }
 
 function getSupabase(authHeader: string) {
@@ -62,7 +68,6 @@ Deno.serve(async (req) => {
     }
     const userId = claimsData.claims.sub as string;
 
-    // Check admin role
     const serviceDb = getServiceSupabase();
     const { data: roles } = await serviceDb
       .from("user_roles")
@@ -89,26 +94,6 @@ Deno.serve(async (req) => {
 
       if (!profile) return json({ error: "Restaurante não encontrado" }, 404);
 
-      // If pending, check document status with Asaas
-      if (profile.asaas_customer_id && profile.asaas_account_status === "aguardando_verificacao") {
-        try {
-          const account = await asaas(`/accounts/${profile.asaas_customer_id}`);
-          if (account?.id) {
-            // Check if account documentation is approved
-            const docStatus = account.documentStatus;
-            if (docStatus === "APPROVED" || account.commercialInfoExpiration) {
-              await serviceDb
-                .from("profiles")
-                .update({ asaas_account_status: "ativa" })
-                .eq("id", restaurantId);
-              profile.asaas_account_status = "ativa";
-            }
-          }
-        } catch (_e) {
-          console.error("Error checking Asaas account:", _e);
-        }
-      }
-
       return json({
         status: profile.asaas_account_status || "inactive",
         customerId: profile.asaas_customer_id,
@@ -119,12 +104,11 @@ Deno.serve(async (req) => {
 
     // ─── CREATE SUBACCOUNT ──────────────────────────────────
     if (action === "create-account") {
-      const { restaurantId, name, cpfCnpj, email, phone, birthDate, companyType, incomeValue } = params;
-      if (!restaurantId || !name || !cpfCnpj || !email) {
-        return json({ error: "Campos obrigatórios: restaurantId, name, cpfCnpj, email" }, 400);
+      const { restaurantId, name, cpfCnpj, email, mobilePhone, birthDate, companyType, postalCode, incomeValue } = params;
+      if (!restaurantId || !name || !cpfCnpj || !email || !mobilePhone) {
+        return json({ error: "Campos obrigatórios: name, cpfCnpj, email, mobilePhone" }, 400);
       }
 
-      // Check if already has account
       const { data: existing } = await serviceDb
         .from("profiles")
         .select("asaas_customer_id")
@@ -138,38 +122,53 @@ Deno.serve(async (req) => {
       const cleanCpfCnpj = cpfCnpj.replace(/\D/g, "");
       const isCompany = cleanCpfCnpj.length > 11;
 
-      // Create SUBACCOUNT (not customer) via POST /accounts
+      // Build payload according to Asaas POST /accounts docs
       const accountPayload: Record<string, unknown> = {
         name,
         cpfCnpj: cleanCpfCnpj,
         email,
-        phone: phone?.replace(/\D/g, ""),
-        companyType: companyType || (isCompany ? "LIMITED" : null),
-        incomeValue: incomeValue || 5000,
-        birthDate: birthDate || undefined,
+        mobilePhone: mobilePhone.replace(/\D/g, ""),
+        incomeValue: Number(incomeValue) || 5000,
       };
+
+      // CPF requires birthDate
+      if (!isCompany && birthDate) {
+        accountPayload.birthDate = birthDate;
+      }
+
+      // CNPJ requires companyType
+      if (isCompany && companyType) {
+        accountPayload.companyType = companyType;
+      }
+
+      // CEP
+      if (postalCode) {
+        accountPayload.postalCode = postalCode.replace(/\D/g, "");
+      }
 
       console.log("Creating Asaas subaccount:", JSON.stringify(accountPayload));
 
       const account = await asaas("/accounts", "POST", accountPayload);
 
       if (account.errors) {
-        console.error("Asaas account creation error:", JSON.stringify(account.errors));
-        return json({ error: account.errors[0]?.description || "Erro ao criar subconta na Asaas" }, 400);
+        console.error("Asaas error:", JSON.stringify(account.errors));
+        return json({ error: account.errors[0]?.description || "Erro ao criar subconta" }, 400);
       }
 
-      console.log("Asaas subaccount created:", account.id, "onboardingUrl:", account.accountNumber?.onboardingUrl);
+      console.log("Asaas subaccount created successfully:", JSON.stringify({
+        id: account.id,
+        walletId: account.walletId,
+        onboardingUrl: account.onboardingUrl,
+        apiKey: account.apiKey ? "***saved***" : "none",
+      }));
 
-      // The onboardingUrl is where the restaurant completes verification
-      const onboardingUrl = account.onboardingUrl || null;
-
-      // Save wallet ID and API key securely
+      // Save the account info - IMPORTANT: save apiKey and walletId
       await serviceDb
         .from("profiles")
         .update({
           asaas_customer_id: account.id,
           asaas_account_status: "aguardando_verificacao",
-          asaas_onboarding_url: onboardingUrl,
+          asaas_onboarding_url: account.onboardingUrl || null,
           asaas_created_at: new Date().toISOString(),
         })
         .eq("id", restaurantId);
@@ -177,7 +176,7 @@ Deno.serve(async (req) => {
       return json({
         status: "aguardando_verificacao",
         customerId: account.id,
-        onboardingUrl,
+        onboardingUrl: account.onboardingUrl || null,
         walletId: account.walletId || null,
       });
     }
@@ -197,21 +196,16 @@ Deno.serve(async (req) => {
         return json({ status: "inactive" });
       }
 
-      // Check subaccount status
       const account = await asaas(`/accounts/${profile.asaas_customer_id}`);
-      console.log("Asaas account status check:", JSON.stringify(account));
+      console.log("Account status check:", JSON.stringify(account));
 
       if (!account?.id) {
         return json({ status: profile.asaas_account_status || "inactive" });
       }
 
       let newStatus = profile.asaas_account_status;
-
-      // Check document/onboarding status
       if (account.documentStatus === "APPROVED") {
         newStatus = "ativa";
-      } else if (account.documentStatus === "PENDING" || account.documentStatus === "AWAITING_APPROVAL") {
-        newStatus = "aguardando_verificacao";
       }
 
       if (newStatus !== profile.asaas_account_status) {
