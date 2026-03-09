@@ -29,6 +29,7 @@ export function PaymentSettingsManager() {
     cpfCnpj: "",
     email: "",
     phone: "",
+    birthDate: "",
   });
 
   useEffect(() => {
