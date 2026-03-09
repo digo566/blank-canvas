@@ -89,16 +89,14 @@ Deno.serve(async (req) => {
 
       if (!profile) return json({ error: "Restaurante não encontrado" }, 404);
 
-      // If has customer ID and status is pending, check with Asaas
+      // If pending, check document status with Asaas
       if (profile.asaas_customer_id && profile.asaas_account_status === "aguardando_verificacao") {
         try {
-          const customer = await asaas(`/customers/${profile.asaas_customer_id}`);
-          if (customer?.id) {
-            // Check if account has bank info or pix configured
-            const bankAccounts = await asaas(`/bankAccounts?customer=${profile.asaas_customer_id}`);
-            const hasBankInfo = bankAccounts?.data?.length > 0;
-
-            if (hasBankInfo) {
+          const account = await asaas(`/accounts/${profile.asaas_customer_id}`);
+          if (account?.id) {
+            // Check if account documentation is approved
+            const docStatus = account.documentStatus;
+            if (docStatus === "APPROVED" || account.commercialInfoExpiration) {
               await serviceDb
                 .from("profiles")
                 .update({ asaas_account_status: "ativa" })
@@ -119,9 +117,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ─── CREATE ACCOUNT ─────────────────────────────────────
+    // ─── CREATE SUBACCOUNT ──────────────────────────────────
     if (action === "create-account") {
-      const { restaurantId, name, cpfCnpj, email, phone } = params;
+      const { restaurantId, name, cpfCnpj, email, phone, companyType, incomeValue } = params;
       if (!restaurantId || !name || !cpfCnpj || !email) {
         return json({ error: "Campos obrigatórios: restaurantId, name, cpfCnpj, email" }, 400);
       }
@@ -137,26 +135,38 @@ Deno.serve(async (req) => {
         return json({ error: "Restaurante já possui conta financeira" }, 400);
       }
 
-      // Create customer in Asaas
-      const customer = await asaas("/customers", "POST", {
+      const cleanCpfCnpj = cpfCnpj.replace(/\D/g, "");
+      const isCompany = cleanCpfCnpj.length > 11;
+
+      // Create SUBACCOUNT (not customer) via POST /accounts
+      const accountPayload: Record<string, unknown> = {
         name,
-        cpfCnpj: cpfCnpj.replace(/\D/g, ""),
+        cpfCnpj: cleanCpfCnpj,
         email,
         phone: phone?.replace(/\D/g, ""),
-      });
+        companyType: companyType || (isCompany ? "LIMITED" : null),
+        incomeValue: incomeValue || 5000,
+      };
 
-      if (customer.errors) {
-        return json({ error: customer.errors[0]?.description || "Erro ao criar conta na Asaas" }, 400);
+      console.log("Creating Asaas subaccount:", JSON.stringify(accountPayload));
+
+      const account = await asaas("/accounts", "POST", accountPayload);
+
+      if (account.errors) {
+        console.error("Asaas account creation error:", JSON.stringify(account.errors));
+        return json({ error: account.errors[0]?.description || "Erro ao criar subconta na Asaas" }, 400);
       }
 
-      // Build onboarding URL
-      const onboardingUrl = `https://www.asaas.com/customerOnboarding/${customer.id}`;
+      console.log("Asaas subaccount created:", account.id, "onboardingUrl:", account.accountNumber?.onboardingUrl);
 
-      // Update profile
+      // The onboardingUrl is where the restaurant completes verification
+      const onboardingUrl = account.onboardingUrl || null;
+
+      // Save wallet ID and API key securely
       await serviceDb
         .from("profiles")
         .update({
-          asaas_customer_id: customer.id,
+          asaas_customer_id: account.id,
           asaas_account_status: "aguardando_verificacao",
           asaas_onboarding_url: onboardingUrl,
           asaas_created_at: new Date().toISOString(),
@@ -165,72 +175,13 @@ Deno.serve(async (req) => {
 
       return json({
         status: "aguardando_verificacao",
-        customerId: customer.id,
+        customerId: account.id,
         onboardingUrl,
+        walletId: account.walletId || null,
       });
     }
 
-    // ─── CREATE CHARGE ──────────────────────────────────────
-    if (action === "create-charge") {
-      const { restaurantId, orderId, value, description, billingType } = params;
-      if (!restaurantId || !orderId || !value || !billingType) {
-        return json({ error: "Campos obrigatórios: restaurantId, orderId, value, billingType" }, 400);
-      }
-
-      // Get restaurant's Asaas customer ID
-      const { data: profile } = await serviceDb
-        .from("profiles")
-        .select("asaas_customer_id, asaas_account_status")
-        .eq("id", restaurantId)
-        .single();
-
-      if (!profile?.asaas_customer_id || profile.asaas_account_status !== "ativa") {
-        return json({ error: "Restaurante não possui conta de recebimentos ativa" }, 400);
-      }
-
-      const dueDate = new Date();
-      dueDate.setDate(dueDate.getDate() + 1);
-
-      const payment = await asaas("/payments", "POST", {
-        customer: profile.asaas_customer_id,
-        billingType,
-        value,
-        dueDate: dueDate.toISOString().split("T")[0],
-        description: description || `Pedido #${orderId}`,
-        externalReference: orderId,
-      });
-
-      if (payment.errors) {
-        return json({ error: payment.errors[0]?.description || "Erro ao criar cobrança" }, 400);
-      }
-
-      let paymentInfo = null;
-      if (billingType === "PIX") {
-        await new Promise((r) => setTimeout(r, 1500));
-        const pixData = await asaas(`/payments/${payment.id}/pixQrCode`);
-        paymentInfo = {
-          type: "PIX",
-          paymentId: payment.id,
-          qrCode: pixData?.encodedImage || null,
-          copyPaste: pixData?.payload || null,
-          value: payment.value,
-          dueDate: payment.dueDate,
-        };
-      } else {
-        paymentInfo = {
-          type: billingType,
-          paymentId: payment.id,
-          bankSlipUrl: payment.bankSlipUrl,
-          invoiceUrl: payment.invoiceUrl,
-          value: payment.value,
-          dueDate: payment.dueDate,
-        };
-      }
-
-      return json({ paymentInfo });
-    }
-
-    // ─── CHECK ACCOUNT STATUS (REFRESH) ─────────────────────
+    // ─── REFRESH STATUS ─────────────────────────────────────
     if (action === "refresh-status") {
       const { restaurantId } = params;
       if (!restaurantId) return json({ error: "restaurantId required" }, 400);
@@ -245,15 +196,21 @@ Deno.serve(async (req) => {
         return json({ status: "inactive" });
       }
 
-      const customer = await asaas(`/customers/${profile.asaas_customer_id}`);
-      if (!customer?.id) {
+      // Check subaccount status
+      const account = await asaas(`/accounts/${profile.asaas_customer_id}`);
+      console.log("Asaas account status check:", JSON.stringify(account));
+
+      if (!account?.id) {
         return json({ status: profile.asaas_account_status || "inactive" });
       }
 
-      // Check transfers/subaccounts status
       let newStatus = profile.asaas_account_status;
-      if (customer.canReceive === true || customer.commercialInfoExpiration) {
+
+      // Check document/onboarding status
+      if (account.documentStatus === "APPROVED") {
         newStatus = "ativa";
+      } else if (account.documentStatus === "PENDING" || account.documentStatus === "AWAITING_APPROVAL") {
+        newStatus = "aguardando_verificacao";
       }
 
       if (newStatus !== profile.asaas_account_status) {
@@ -263,7 +220,11 @@ Deno.serve(async (req) => {
           .eq("id", restaurantId);
       }
 
-      return json({ status: newStatus, customer });
+      return json({
+        status: newStatus,
+        documentStatus: account.documentStatus,
+        onboardingUrl: account.onboardingUrl,
+      });
     }
 
     return json({ error: "Ação inválida" }, 400);
