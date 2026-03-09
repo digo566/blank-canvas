@@ -27,6 +27,7 @@ const Analytics = lazy(() => import("./pages/Analytics"));
 const Finance = lazy(() => import("./pages/Finance"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Admin = lazy(() => import("./pages/Admin"));
+const Feedbacks = lazy(() => import("./pages/Feedbacks"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 
 const queryClient = new QueryClient();
