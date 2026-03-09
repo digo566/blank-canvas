@@ -286,31 +286,6 @@ export default function Analytics() {
             {analysis && (
               <div className="space-y-6">
                 <PredictionsPanel predicoes={analysis.predicoes} />
-                
-                <div className="relative">
-                  <InsightsPanel
-                    problemas={analysis.problemas_detectados}
-                    sugestoes={analysis.sugestoes_personalizadas}
-                  />
-                  {analysis.sugestoes_personalizadas.length > 0 && (
-                    <div className="flex justify-end mt-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setFeedbackDialog({
-                            open: true,
-                            suggestion: analysis.sugestoes_personalizadas[0],
-                            type: "sugestao_geral",
-                          })
-                        }
-                      >
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Avaliar Sugestões
-                      </Button>
-                    </div>
-                  )}
-                </div>
               </div>
             )}
 
