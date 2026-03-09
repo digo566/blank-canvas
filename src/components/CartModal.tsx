@@ -193,21 +193,25 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
   };
 
   const handleCloseSuccess = () => {
-    setStep('cart');
-    setFormData({
-      name: "",
-      phone: "",
-      address: "",
-      cpf: "",
-      wantsCpfOnInvoice: false,
-      paymentMethod: "",
-      needsChange: false,
-      changeAmount: "",
-      notes: "",
-    });
-    setTrackingCode(null);
-    onClose();
-    window.location.reload();
+    if (trackingCode) {
+      navigate(`/track?code=${trackingCode}`);
+    } else {
+      setStep('cart');
+      setFormData({
+        name: "",
+        phone: "",
+        address: "",
+        cpf: "",
+        wantsCpfOnInvoice: false,
+        paymentMethod: "",
+        needsChange: false,
+        changeAmount: "",
+        notes: "",
+      });
+      setTrackingCode(null);
+      onClose();
+      window.location.reload();
+    }
   };
 
   return (
