@@ -33,11 +33,6 @@ export default function Analytics() {
   const [dateFrom, setDateFrom] = useState<Date>(subWeeks(new Date(), 1));
   const [dateTo, setDateTo] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState<"dashboard" | "ai">("dashboard");
-  const [feedbackDialog, setFeedbackDialog] = useState<{
-    open: boolean;
-    suggestion: string;
-    type: string;
-  }>({ open: false, suggestion: "", type: "" });
 
   useEffect(() => {
     const now = new Date();
