@@ -231,9 +231,10 @@ REGRAS IMPORTANTES:
       - Cidade (se necessário)
    ${deliveryMode === "delivery_and_pickup" ? `e)` : `d)`} **Itens do pedido** com quantidades e opções/observações de cada item
    ${deliveryMode === "delivery_and_pickup" ? `f)` : `e)`} **Cupom de desconto** (pergunte se o cliente tem algum cupom)
-   ${deliveryMode === "delivery_and_pickup" ? `g)` : `f)`} **Forma de pagamento**: Pix, Dinheiro ou Cartão
-   ${deliveryMode === "delivery_and_pickup" ? `h)` : `g)`} Se for Dinheiro, perguntar se **precisa de troco** e para quanto
-   ${deliveryMode === "delivery_and_pickup" ? `i)` : `h)`} **Observações** gerais do pedido (alergia, restrição, etc.)
+   ${deliveryMode === "delivery_and_pickup" ? `g)` : `f)`} **CPF na nota fiscal** - Pergunte se o cliente quer CPF na nota fiscal. Se sim, peça o CPF (apenas números, 11 dígitos). Se não, deixe vazio.
+   ${deliveryMode === "delivery_and_pickup" ? `h)` : `g)`} **Forma de pagamento**: Pix, Dinheiro ou Cartão
+   ${deliveryMode === "delivery_and_pickup" ? `i)` : `h)`} Se for Dinheiro, perguntar se **precisa de troco** e para quanto
+   ${deliveryMode === "delivery_and_pickup" ? `j)` : `i)`} **Observações** gerais do pedido (alergia, restrição, etc.)
 
 7. Se o cliente não fornecer alguma informação obrigatória, PERGUNTE antes de confirmar. NÃO pule nenhum campo.
 8. TELEFONE: Se o cliente informar um número com menos de 10 dígitos, peça para confirmar com DDD. Salve APENAS números (sem traços, parênteses ou espaços). Formato esperado: DDD + número = 10 ou 11 dígitos.
