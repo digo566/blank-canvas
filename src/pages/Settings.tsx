@@ -123,7 +123,7 @@ const Settings = () => {
       if (error) throw error;
       toast.success("Configurações salvas!");
     } catch (error: any) {
-      toast.error("Erro ao salvar: " + error.message);
+      toast.error("Erro ao salvar configurações. Tente novamente.");
     } finally {
       setSaving(false);
     }
