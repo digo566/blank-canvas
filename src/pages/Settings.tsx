@@ -94,7 +94,7 @@ const Settings = () => {
           max_delivery_time: data.max_delivery_time || 60,
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error("Erro ao carregar perfil");
     } finally {
       setLoading(false);
