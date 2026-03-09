@@ -139,6 +139,14 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
     setLoading(true);
 
     try {
+      // Build notes with CPF if provided
+      let finalNotes = formData.notes || "";
+      if (formData.wantsCpfOnInvoice && formData.cpf) {
+        finalNotes = finalNotes 
+          ? `${finalNotes}\n📄 CPF na nota: ${formData.cpf}`
+          : `📄 CPF na nota: ${formData.cpf}`;
+      }
+
       // Chamar edge function segura para finalizar
       const { data, error } = await supabase.functions.invoke("public-checkout", {
         body: {
@@ -148,7 +156,7 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
           paymentMethod: formData.paymentMethod,
           needsChange: formData.needsChange,
           changeAmount: formData.needsChange && formData.changeAmount ? parseFloat(formData.changeAmount) : null,
-          notes: formData.notes || null,
+          notes: finalNotes || null,
           totalAmount: total,
         },
       });
