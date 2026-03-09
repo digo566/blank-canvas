@@ -52,6 +52,8 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
     name: "",
     phone: "",
     address: "",
+    cpf: "",
+    wantsCpfOnInvoice: false,
     paymentMethod: "",
     needsChange: false,
     changeAmount: "",
@@ -77,6 +79,11 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
       toast.error(dataValidation.error.errors[0].message);
       return;
     }
+
+    if (formData.wantsCpfOnInvoice && formData.cpf.length !== 11) {
+      toast.error("CPF deve ter 11 dígitos");
+      return;
+    }
     
     setLoading(true);
 
@@ -89,6 +96,7 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
           name: formData.name,
           phone: formData.phone,
           address: formData.address,
+          cpf: formData.wantsCpfOnInvoice ? formData.cpf : null,
           items: items.map(item => ({
             id: item.id,
             name: item.name,
@@ -131,6 +139,14 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
     setLoading(true);
 
     try {
+      // Build notes with CPF if provided
+      let finalNotes = formData.notes || "";
+      if (formData.wantsCpfOnInvoice && formData.cpf) {
+        finalNotes = finalNotes 
+          ? `${finalNotes}\n📄 CPF na nota: ${formData.cpf}`
+          : `📄 CPF na nota: ${formData.cpf}`;
+      }
+
       // Chamar edge function segura para finalizar
       const { data, error } = await supabase.functions.invoke("public-checkout", {
         body: {
@@ -140,7 +156,7 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
           paymentMethod: formData.paymentMethod,
           needsChange: formData.needsChange,
           changeAmount: formData.needsChange && formData.changeAmount ? parseFloat(formData.changeAmount) : null,
-          notes: formData.notes || null,
+          notes: finalNotes || null,
           totalAmount: total,
         },
       });
@@ -180,6 +196,8 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
       name: "",
       phone: "",
       address: "",
+      cpf: "",
+      wantsCpfOnInvoice: false,
       paymentMethod: "",
       needsChange: false,
       changeAmount: "",
@@ -331,6 +349,33 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 required
               />
+            </div>
+
+            <div className="space-y-3 border-t pt-3">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="wantsCpfOnInvoice"
+                  checked={formData.wantsCpfOnInvoice}
+                  onChange={(e) => setFormData({ ...formData, wantsCpfOnInvoice: e.target.checked, cpf: "" })}
+                  className="h-4 w-4"
+                />
+                <Label htmlFor="wantsCpfOnInvoice" className="cursor-pointer">Quero CPF na nota fiscal</Label>
+              </div>
+
+              {formData.wantsCpfOnInvoice && (
+                <div className="space-y-2">
+                  <Label htmlFor="cpf">CPF (apenas números)</Label>
+                  <Input
+                    id="cpf"
+                    type="text"
+                    placeholder="12345678901"
+                    value={formData.cpf}
+                    onChange={(e) => setFormData({ ...formData, cpf: e.target.value.replace(/\D/g, "") })}
+                    maxLength={11}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">

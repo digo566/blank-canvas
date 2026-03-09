@@ -231,9 +231,10 @@ REGRAS IMPORTANTES:
       - Cidade (se necessário)
    ${deliveryMode === "delivery_and_pickup" ? `e)` : `d)`} **Itens do pedido** com quantidades e opções/observações de cada item
    ${deliveryMode === "delivery_and_pickup" ? `f)` : `e)`} **Cupom de desconto** (pergunte se o cliente tem algum cupom)
-   ${deliveryMode === "delivery_and_pickup" ? `g)` : `f)`} **Forma de pagamento**: Pix, Dinheiro ou Cartão
-   ${deliveryMode === "delivery_and_pickup" ? `h)` : `g)`} Se for Dinheiro, perguntar se **precisa de troco** e para quanto
-   ${deliveryMode === "delivery_and_pickup" ? `i)` : `h)`} **Observações** gerais do pedido (alergia, restrição, etc.)
+   ${deliveryMode === "delivery_and_pickup" ? `g)` : `f)`} **CPF na nota fiscal** - Pergunte se o cliente quer CPF na nota fiscal. Se sim, peça o CPF (apenas números, 11 dígitos). Se não, deixe vazio.
+   ${deliveryMode === "delivery_and_pickup" ? `h)` : `g)`} **Forma de pagamento**: Pix, Dinheiro ou Cartão
+   ${deliveryMode === "delivery_and_pickup" ? `i)` : `h)`} Se for Dinheiro, perguntar se **precisa de troco** e para quanto
+   ${deliveryMode === "delivery_and_pickup" ? `j)` : `i)`} **Observações** gerais do pedido (alergia, restrição, etc.)
 
 7. Se o cliente não fornecer alguma informação obrigatória, PERGUNTE antes de confirmar. NÃO pule nenhum campo.
 8. TELEFONE: Se o cliente informar um número com menos de 10 dígitos, peça para confirmar com DDD. Salve APENAS números (sem traços, parênteses ou espaços). Formato esperado: DDD + número = 10 ou 11 dígitos.
@@ -245,6 +246,7 @@ REGRAS IMPORTANTES:
    - 🛒 Itens (quantidade x nome - preço)
    ${deliveryZones.length > 0 ? "- 🏘️ Bairro: [nome] - Taxa: R$ X,XX\n   " : ""}- 🎟️ Cupom (se aplicado): desconto de X
    - 💰 Total ${deliveryZones.length > 0 ? "(itens + taxa de entrega - desconto)" : ""}
+   - 📄 CPF na nota: informar se foi fornecido
    - 💳 Forma de pagamento
    - 📝 Observações
    
@@ -256,6 +258,7 @@ REGRAS IMPORTANTES:
   "order_confirmed": true,
   "customer_name": "Nome Completo do Cliente",
   "customer_phone": "85999998888",
+  "customer_cpf": "12345678901" ou null,
   "customer_address": "Rua Exemplo, 123, Bairro Centro, Apto 101 - Cidade",
   "delivery_type": "delivery" ou "pickup",
   "delivery_fee": 5.00,
@@ -289,6 +292,7 @@ REGRAS IMPORTANTES:
 IMPORTANTE: 
 - O bloco json_order deve ser incluído APENAS quando o cliente CONFIRMAR o pedido. NÃO inclua antes da confirmação.
 - O campo "customer_phone" DEVE conter APENAS números (sem +55, sem traços, sem parênteses). Exemplo: "85999998888" (DDD + número).
+- O campo "customer_cpf" deve conter APENAS números (11 dígitos) se o cliente quiser CPF na nota, ou null se não quiser. Sempre pergunte ao cliente.
 - O campo "customer_address" DEVE ser o endereço completo e organizado: "Rua, Número, Bairro, Complemento - Cidade". Se for retirada, coloque "Retirada no local".
 - O campo "delivery_type" deve ser "delivery" ou "pickup".
 - O campo "delivery_fee" deve ser a taxa de entrega (0 se for retirada ou bairro não cadastrado).
@@ -414,6 +418,7 @@ IMPORTANTE:
           const sanitizedPhone = String(orderData.customer_phone || "").replace(/\D/g, "");
           const sanitizedName = String(orderData.customer_name || "").trim();
           const sanitizedAddress = String(orderData.customer_address || "").trim();
+          const sanitizedCpf = orderData.customer_cpf ? String(orderData.customer_cpf).replace(/\D/g, "") : null;
 
           console.log("Order confirmed. Name:", sanitizedName, "Phone:", sanitizedPhone, "Address:", sanitizedAddress);
 
@@ -540,6 +545,11 @@ IMPORTANTE:
           }
 
           if (orderData.notes && String(orderData.notes).trim()) noteParts.push(`📝 Obs: ${String(orderData.notes).trim()}`);
+          
+          // Add CPF if provided
+          if (sanitizedCpf && sanitizedCpf.length === 11) {
+            noteParts.push(`📄 CPF na nota: ${sanitizedCpf}`);
+          }
 
           // Handle coupon
           const couponId = orderData.coupon_id || null;
