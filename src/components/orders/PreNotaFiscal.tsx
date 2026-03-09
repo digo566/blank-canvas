@@ -404,11 +404,21 @@ export const PreNotaFiscal = ({ order }: { order: OrderForNota }) => {
                   size="sm"
                   variant="outline"
                   className="h-7 text-xs gap-1"
-                  onClick={() => {
-                    const a = document.createElement("a");
-                    a.href = preNota.pdf_url!;
-                    a.download = `pre-nota-${order.tracking_code}.pdf`;
-                    a.click();
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(preNota.pdf_url!);
+                      const blob = await response.blob();
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `pre-nota-${order.tracking_code || order.id.slice(0, 8)}.pdf`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                    } catch {
+                      toast.error("Erro ao baixar PDF");
+                    }
                   }}
                 >
                   <Download className="h-3 w-3" /> Baixar PDF
