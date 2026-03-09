@@ -548,6 +548,14 @@ Confirmou? Adicione JSON:
 
               console.log("Order created successfully:", newOrder.id, "tracking:", orderTrackingCode);
 
+              // CLEAR conversation history after successful order
+              try {
+                await supabase.from("ai_conversations").delete().eq("restaurant_id", restaurantId);
+                console.log("Conversation history cleared for restaurant:", restaurantId);
+              } catch (cleanupError) {
+                console.error("Error clearing conversation history:", cleanupError);
+              }
+
               // Update loyalty progress
               if (loyaltyConfig && sanitizedPhone) {
                 try {
