@@ -263,6 +263,7 @@ const Admin = () => {
           <TabsList>
             <TabsTrigger value="leads">Leads ({leads.length})</TabsTrigger>
             <TabsTrigger value="restaurants">Restaurantes ({restaurants.length})</TabsTrigger>
+            <TabsTrigger value="feedbacks">Opiniões ({feedbacks.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="leads" className="mt-4">
