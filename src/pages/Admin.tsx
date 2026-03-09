@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Users, Store, ShoppingBag, TrendingUp, Trash2, ExternalLink, MessageSquare, Star } from "lucide-react";
+import { Users, Store, ShoppingBag, TrendingUp, Trash2, ExternalLink, MessageSquare, Star, DollarSign } from "lucide-react";
+import { RestaurantRevenuePanel } from "@/components/admin/RestaurantRevenuePanel";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -260,9 +261,13 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="leads">
-          <TabsList>
+          <TabsList className="flex flex-wrap gap-1">
             <TabsTrigger value="leads">Leads ({leads.length})</TabsTrigger>
             <TabsTrigger value="restaurants">Restaurantes ({restaurants.length})</TabsTrigger>
+            <TabsTrigger value="revenue">
+              <DollarSign className="h-3.5 w-3.5 mr-1" />
+              Faturamento
+            </TabsTrigger>
             <TabsTrigger value="feedbacks">Opiniões ({feedbacks.length})</TabsTrigger>
           </TabsList>
 
@@ -382,6 +387,10 @@ const Admin = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="revenue" className="mt-4">
+            <RestaurantRevenuePanel restaurants={restaurants.map(r => ({ id: r.id, restaurant_name: r.restaurant_name }))} />
           </TabsContent>
 
           <TabsContent value="feedbacks" className="mt-4">
