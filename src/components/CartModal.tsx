@@ -79,6 +79,11 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
       toast.error(dataValidation.error.errors[0].message);
       return;
     }
+
+    if (formData.wantsCpfOnInvoice && formData.cpf.length !== 11) {
+      toast.error("CPF deve ter 11 dígitos");
+      return;
+    }
     
     setLoading(true);
 
@@ -91,6 +96,7 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
           name: formData.name,
           phone: formData.phone,
           address: formData.address,
+          cpf: formData.wantsCpfOnInvoice ? formData.cpf : null,
           items: items.map(item => ({
             id: item.id,
             name: item.name,
