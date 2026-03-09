@@ -150,21 +150,43 @@ Deno.serve(async (req) => {
 
       let account = await asaas("/accounts", "POST", accountPayload);
 
-      // If CPF/CNPJ already in use, try to find existing subaccount
+      // If CPF/CNPJ already in use, try to find existing subaccount or customer
       if (account.errors) {
         const cpfInUse = account.errors.some((e: { description?: string }) =>
           e.description?.includes("já está em uso")
         );
 
         if (cpfInUse) {
-          console.log("CPF/CNPJ already in use, searching existing subaccount...");
-          const existing = await asaas(`/accounts?cpfCnpj=${cleanCpfCnpj}`);
-          if (existing?.data?.length > 0) {
-            account = existing.data[0];
+          console.log("CPF/CNPJ already in use, searching existing accounts...");
+          
+          // Try subaccounts first
+          const existingSub = await asaas(`/accounts?cpfCnpj=${cleanCpfCnpj}`);
+          console.log("Subaccount search result:", JSON.stringify(existingSub));
+          
+          if (existingSub?.data?.length > 0) {
+            account = existingSub.data[0];
             console.log("Found existing subaccount:", account.id);
           } else {
-            console.error("Asaas error:", JSON.stringify(account.errors));
-            return json({ error: account.errors[0]?.description || "Erro ao criar subconta" }, 400);
+            // Try customers
+            const existingCust = await asaas(`/customers?cpfCnpj=${cleanCpfCnpj}`);
+            console.log("Customer search result:", JSON.stringify(existingCust));
+            
+            if (existingCust?.data?.length > 0) {
+              // Delete old customer and retry creating subaccount
+              const custId = existingCust.data[0].id;
+              console.log("Found existing customer, deleting:", custId);
+              await asaas(`/customers/${custId}`, "DELETE");
+              
+              // Retry subaccount creation
+              account = await asaas("/accounts", "POST", accountPayload);
+              if (account.errors) {
+                console.error("Retry failed:", JSON.stringify(account.errors));
+                return json({ error: account.errors[0]?.description || "Erro ao criar subconta" }, 400);
+              }
+            } else {
+              console.error("Could not find existing account for CPF");
+              return json({ error: "CPF/CNPJ já em uso na Asaas. Contate o suporte." }, 400);
+            }
           }
         } else {
           console.error("Asaas error:", JSON.stringify(account.errors));
