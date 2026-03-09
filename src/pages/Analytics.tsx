@@ -23,7 +23,6 @@ import {
   ShoppingCart, 
   XCircle, 
   Package, 
-  MessageSquare, 
   BarChart3,
   Brain,
   CalendarIcon,
