@@ -261,9 +261,13 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="leads">
-          <TabsList>
+          <TabsList className="flex flex-wrap gap-1">
             <TabsTrigger value="leads">Leads ({leads.length})</TabsTrigger>
             <TabsTrigger value="restaurants">Restaurantes ({restaurants.length})</TabsTrigger>
+            <TabsTrigger value="revenue">
+              <DollarSign className="h-3.5 w-3.5 mr-1" />
+              Faturamento
+            </TabsTrigger>
             <TabsTrigger value="feedbacks">Opiniões ({feedbacks.length})</TabsTrigger>
           </TabsList>
 
