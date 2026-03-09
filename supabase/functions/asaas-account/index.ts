@@ -58,39 +58,6 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { action, ...params } = body;
 
-    // Temporary debug action - no auth needed
-    if (action === "debug-search") {
-      const { cpfCnpj, email } = params;
-      const cleanCpf = (cpfCnpj || "").replace(/\D/g, "");
-      const results: Record<string, unknown> = {};
-      
-      if (cleanCpf) {
-        results.accountsByCpf = await asaas(`/accounts?cpfCnpj=${cleanCpf}`);
-        results.customersByCpf = await asaas(`/customers?cpfCnpj=${cleanCpf}`);
-      }
-      if (email) {
-        const enc = encodeURIComponent(email);
-        results.accountsByEmail = await asaas(`/accounts?email=${enc}`);
-        results.customersByEmail = await asaas(`/customers?email=${enc}`);
-      }
-      
-      return json(results);
-    }
-
-    // Temporary: test create subaccount directly
-    if (action === "debug-create") {
-      const result = await asaas("/accounts", "POST", {
-        name: "Rodrigo Marques Pinheiro",
-        cpfCnpj: "09233118312",
-        email: "rodrigomarquespinheiro9@gmail.com",
-        mobilePhone: "85994285201",
-        incomeValue: 5000,
-        birthDate: "2005-12-11",
-        postalCode: "60441680",
-      });
-      return json(result);
-    }
-
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return json({ error: "Unauthorized" }, 401);
