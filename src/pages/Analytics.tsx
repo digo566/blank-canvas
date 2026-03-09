@@ -9,9 +9,7 @@ import { OrdersChart } from "@/components/analytics/OrdersChart";
 import { CancellationsChart } from "@/components/analytics/CancellationsChart";
 import { AbandonmentChart } from "@/components/analytics/AbandonmentChart";
 import { PerformanceChart } from "@/components/analytics/PerformanceChart";
-import { InsightsPanel } from "@/components/analytics/InsightsPanel";
 import { PredictionsPanel } from "@/components/analytics/PredictionsPanel";
-import { FeedbackDialog } from "@/components/analytics/FeedbackDialog";
 import { AlertsNotification } from "@/components/analytics/AlertsNotification";
 import { AnalyticsAIChat } from "@/components/analytics/AnalyticsAIChat";
 import { useAnalyticsData } from "@/hooks/useAnalyticsData";
@@ -25,7 +23,6 @@ import {
   ShoppingCart, 
   XCircle, 
   Package, 
-  MessageSquare, 
   BarChart3,
   Brain,
   CalendarIcon,
@@ -36,11 +33,6 @@ export default function Analytics() {
   const [dateFrom, setDateFrom] = useState<Date>(subWeeks(new Date(), 1));
   const [dateTo, setDateTo] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState<"dashboard" | "ai">("dashboard");
-  const [feedbackDialog, setFeedbackDialog] = useState<{
-    open: boolean;
-    suggestion: string;
-    type: string;
-  }>({ open: false, suggestion: "", type: "" });
 
   useEffect(() => {
     const now = new Date();
@@ -294,31 +286,6 @@ export default function Analytics() {
             {analysis && (
               <div className="space-y-6">
                 <PredictionsPanel predicoes={analysis.predicoes} />
-                
-                <div className="relative">
-                  <InsightsPanel
-                    problemas={analysis.problemas_detectados}
-                    sugestoes={analysis.sugestoes_personalizadas}
-                  />
-                  {analysis.sugestoes_personalizadas.length > 0 && (
-                    <div className="flex justify-end mt-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setFeedbackDialog({
-                            open: true,
-                            suggestion: analysis.sugestoes_personalizadas[0],
-                            type: "sugestao_geral",
-                          })
-                        }
-                      >
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Avaliar Sugestões
-                      </Button>
-                    </div>
-                  )}
-                </div>
               </div>
             )}
 
@@ -359,13 +326,6 @@ export default function Analytics() {
                 <PerformanceChart data={data} />
               </Card>
             </div>
-
-            <FeedbackDialog
-              open={feedbackDialog.open}
-              onOpenChange={(open) => setFeedbackDialog((prev) => ({ ...prev, open }))}
-              suggestion={feedbackDialog.suggestion}
-              suggestionType={feedbackDialog.type}
-            />
           </>
         )}
       </div>

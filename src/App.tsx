@@ -27,6 +27,7 @@ const Analytics = lazy(() => import("./pages/Analytics"));
 const Finance = lazy(() => import("./pages/Finance"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Admin = lazy(() => import("./pages/Admin"));
+const Feedbacks = lazy(() => import("./pages/Feedbacks"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 
 const queryClient = new QueryClient();
@@ -66,6 +67,7 @@ const App = () => (
                 <Route path="/r/:restaurantId" element={<PublicStore />} />
                 <Route path="/chat/:restaurantId" element={<AIAttendant />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/feedbacks" element={<Feedbacks />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/subscription" element={<Subscription />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
