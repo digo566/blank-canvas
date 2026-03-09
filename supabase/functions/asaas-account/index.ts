@@ -55,6 +55,9 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const body = await req.json();
+    const { action, ...params } = body;
+
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return json({ error: "Unauthorized" }, 401);
@@ -77,8 +80,6 @@ Deno.serve(async (req) => {
     if (!roles || roles.length === 0) {
       return json({ error: "Apenas administradores podem acessar esta função" }, 403);
     }
-
-    const { action, ...params } = await req.json();
 
     // ─── GET ACCOUNT STATUS ─────────────────────────────────
     if (action === "get-status") {
@@ -173,43 +174,74 @@ Deno.serve(async (req) => {
         );
 
         if (alreadyInUse) {
-          console.log("Conflict detected, cleaning up existing records...");
+          console.log("Conflict detected, searching for existing subaccounts...");
           
-          // Try subaccounts first by CPF
-          const existingSub = await asaas(`/accounts?cpfCnpj=${cleanCpfCnpj}`);
-          console.log("Subaccount search result:", JSON.stringify(existingSub));
+          // Search subaccounts by CPF
+          const subByCpf = await asaas(`/accounts?cpfCnpj=${cleanCpfCnpj}`);
+          console.log("Subaccount by CPF:", JSON.stringify(subByCpf?.data?.length || 0));
           
-          if (existingSub?.data?.length > 0) {
-            account = existingSub.data[0];
-            console.log("Found existing subaccount:", account.id);
+          // Search subaccounts by email
+          const encodedEmail = encodeURIComponent(accountPayload.email as string);
+          const subByEmail = await asaas(`/accounts?email=${encodedEmail}`);
+          console.log("Subaccount by email:", JSON.stringify(subByEmail?.data?.length || 0));
+          
+          // Check if we found an existing subaccount
+          const existingSub = subByCpf?.data?.[0] || subByEmail?.data?.[0];
+          
+          if (existingSub) {
+            account = existingSub;
+            console.log("Found existing subaccount:", account.id, "walletId:", account.walletId);
           } else {
+            // No subaccount found - clean up customers and retry
+            console.log("No subaccount found, cleaning customers...");
+            
             // Delete ALL customers by CPF
             const custByCpf = await asaas(`/customers?cpfCnpj=${cleanCpfCnpj}`);
-            if (custByCpf?.data?.length > 0) {
-              for (const cust of custByCpf.data) {
-                console.log("Deleting customer (by CPF):", cust.id);
-                await asaas(`/customers/${cust.id}`, "DELETE");
-              }
+            console.log("Customers by CPF:", custByCpf?.data?.length || 0);
+            for (const cust of (custByCpf?.data || [])) {
+              console.log("Deleting customer:", cust.id, cust.email);
+              await asaas(`/customers/${cust.id}`, "DELETE");
             }
 
-            // Also delete ALL customers by email
-            const encodedEmail = encodeURIComponent(accountPayload.email as string);
+            // Delete ALL customers by email
             const custByEmail = await asaas(`/customers?email=${encodedEmail}`);
-            console.log("Customer search by email:", JSON.stringify(custByEmail));
-            if (custByEmail?.data?.length > 0) {
-              for (const cust of custByEmail.data) {
-                console.log("Deleting customer (by email):", cust.id);
-                await asaas(`/customers/${cust.id}`, "DELETE");
-              }
+            console.log("Customers by email:", custByEmail?.data?.length || 0);
+            for (const cust of (custByEmail?.data || [])) {
+              console.log("Deleting customer:", cust.id, cust.email);
+              await asaas(`/customers/${cust.id}`, "DELETE");
             }
 
-            // Wait then retry
-            await new Promise((r) => setTimeout(r, 3000));
+            // Wait longer for Asaas to process deletions
+            await new Promise((r) => setTimeout(r, 5000));
             
+            // Retry
+            console.log("Retrying subaccount creation...");
             account = await asaas("/accounts", "POST", accountPayload);
+            
             if (account.errors) {
-              console.error("Retry failed:", JSON.stringify(account.errors));
-              return json({ error: account.errors[0]?.description || "Erro ao criar subconta. Tente com outro email." }, 400);
+              console.error("Retry 1 failed:", JSON.stringify(account.errors));
+              
+              // Last resort: wait more and try once more
+              await new Promise((r) => setTimeout(r, 5000));
+              account = await asaas("/accounts", "POST", accountPayload);
+              
+              if (account.errors) {
+                console.error("Retry 2 failed:", JSON.stringify(account.errors));
+                
+                // Final check: maybe the subaccount was actually created by a previous attempt
+                const finalCheck = await asaas(`/accounts?cpfCnpj=${cleanCpfCnpj}`);
+                const finalCheckEmail = await asaas(`/accounts?email=${encodedEmail}`);
+                const found = finalCheck?.data?.[0] || finalCheckEmail?.data?.[0];
+                
+                if (found) {
+                  console.log("Found subaccount on final check:", found.id);
+                  account = found;
+                } else {
+                  return json({ 
+                    error: "CPF/email já cadastrado no sistema de pagamentos. Aguarde alguns minutos e tente novamente, ou entre em contato com o suporte." 
+                  }, 400);
+                }
+              }
             }
           }
         } else {
