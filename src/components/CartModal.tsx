@@ -335,6 +335,33 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
               />
             </div>
 
+            <div className="space-y-3 border-t pt-3">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="wantsCpfOnInvoice"
+                  checked={formData.wantsCpfOnInvoice}
+                  onChange={(e) => setFormData({ ...formData, wantsCpfOnInvoice: e.target.checked, cpf: "" })}
+                  className="h-4 w-4"
+                />
+                <Label htmlFor="wantsCpfOnInvoice" className="cursor-pointer">Quero CPF na nota fiscal</Label>
+              </div>
+
+              {formData.wantsCpfOnInvoice && (
+                <div className="space-y-2">
+                  <Label htmlFor="cpf">CPF (apenas números)</Label>
+                  <Input
+                    id="cpf"
+                    type="text"
+                    placeholder="12345678901"
+                    value={formData.cpf}
+                    onChange={(e) => setFormData({ ...formData, cpf: e.target.value.replace(/\D/g, "") })}
+                    maxLength={11}
+                  />
+                </div>
+              )}
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="notes">Observações (Opcional)</Label>
               <Textarea
