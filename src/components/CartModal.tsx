@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,7 @@ const checkoutSchema = z.object({
 });
 
 export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, restaurantId, guestCartId, onRemoveItem, onUpdateQuantity }: CartModalProps) {
+  const navigate = useNavigate();
   const [step, setStep] = useState<'cart' | 'data' | 'payment' | 'success'>('cart');
   const [loading, setLoading] = useState(false);
   const [savedCartId, setSavedCartId] = useState<string | null>(null);
@@ -191,21 +193,25 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
   };
 
   const handleCloseSuccess = () => {
-    setStep('cart');
-    setFormData({
-      name: "",
-      phone: "",
-      address: "",
-      cpf: "",
-      wantsCpfOnInvoice: false,
-      paymentMethod: "",
-      needsChange: false,
-      changeAmount: "",
-      notes: "",
-    });
-    setTrackingCode(null);
-    onClose();
-    window.location.reload();
+    if (trackingCode) {
+      navigate(`/track?code=${trackingCode}`);
+    } else {
+      setStep('cart');
+      setFormData({
+        name: "",
+        phone: "",
+        address: "",
+        cpf: "",
+        wantsCpfOnInvoice: false,
+        paymentMethod: "",
+        needsChange: false,
+        changeAmount: "",
+        notes: "",
+      });
+      setTrackingCode(null);
+      onClose();
+      window.location.reload();
+    }
   };
 
   return (
