@@ -9,14 +9,8 @@ export function AbandonmentChart({ rate }: { rate: number }) {
 
   const getStatusColor = () => {
     if (isGood) return "text-primary";
-    if (isWarning) return "text-yellow-600";
+    if (isWarning) return "text-chart-2";
     return "text-destructive";
-  };
-
-  const getProgressColor = () => {
-    if (isGood) return "bg-primary";
-    if (isWarning) return "bg-yellow-600";
-    return "bg-destructive";
   };
 
   const getStatusText = () => {
