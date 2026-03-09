@@ -347,6 +347,10 @@ const Settings = () => {
             <FiscalSettingsManager />
           </TabsContent>
 
+          <TabsContent value="payments" className="space-y-4">
+            <PaymentSettingsManager />
+          </TabsContent>
+
         </Tabs>
       </div>
     </DashboardLayout>
