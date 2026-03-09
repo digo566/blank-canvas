@@ -69,6 +69,7 @@ const App = () => (
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/subscription" element={<Subscription />} />
+                <Route path="/feedback" element={<Feedback />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
