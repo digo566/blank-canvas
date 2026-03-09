@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/NavLink";
 import { 
   LayoutDashboard, Package, ShoppingBag, Users, LogOut, Menu,
-  ShoppingCart, BarChart3, Settings, Crown, AlertTriangle
+  ShoppingCart, BarChart3, Settings, Crown, AlertTriangle, MessageSquarePlus
 } from "lucide-react";
 import grapeLogo from "@/assets/grape-logo.png";
 import { toast } from "sonner";
@@ -51,6 +51,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { to: "/customers", icon: Users, label: "Clientes" },
     { to: "/abandoned-carts", icon: ShoppingCart, label: "Carrinhos" },
     { to: "/settings", icon: Settings, label: "Configurações" },
+    { to: "/feedback", icon: MessageSquarePlus, label: "Opiniões" },
     ...(isAdmin ? [
       { to: "/admin", icon: Crown, label: "Admin Grape" }
     ] : []),
