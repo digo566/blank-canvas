@@ -45,6 +45,7 @@ const checkoutSchema = z.object({
 });
 
 export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, restaurantId, guestCartId, onRemoveItem, onUpdateQuantity }: CartModalProps) {
+  const navigate = useNavigate();
   const [step, setStep] = useState<'cart' | 'data' | 'payment' | 'success'>('cart');
   const [loading, setLoading] = useState(false);
   const [savedCartId, setSavedCartId] = useState<string | null>(null);
