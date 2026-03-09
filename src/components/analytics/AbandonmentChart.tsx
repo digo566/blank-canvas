@@ -60,8 +60,8 @@ export function AbandonmentChart({ rate }: { rate: number }) {
                   <p className="font-semibold text-primary">≤ 20%</p>
                   <p>Ótimo</p>
                 </div>
-                <div className="p-2 bg-yellow-500/10 rounded">
-                  <p className="font-semibold text-yellow-600">21-35%</p>
+                <div className="p-2 bg-chart-2/10 rounded">
+                  <p className="font-semibold text-chart-2">21-35%</p>
                   <p>Normal</p>
                 </div>
                 <div className="p-2 bg-destructive/10 rounded">
