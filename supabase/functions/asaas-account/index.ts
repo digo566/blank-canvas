@@ -148,11 +148,28 @@ Deno.serve(async (req) => {
 
       console.log("Creating Asaas subaccount:", JSON.stringify(accountPayload));
 
-      const account = await asaas("/accounts", "POST", accountPayload);
+      let account = await asaas("/accounts", "POST", accountPayload);
 
+      // If CPF/CNPJ already in use, try to find existing subaccount
       if (account.errors) {
-        console.error("Asaas error:", JSON.stringify(account.errors));
-        return json({ error: account.errors[0]?.description || "Erro ao criar subconta" }, 400);
+        const cpfInUse = account.errors.some((e: { description?: string }) =>
+          e.description?.includes("já está em uso")
+        );
+
+        if (cpfInUse) {
+          console.log("CPF/CNPJ already in use, searching existing subaccount...");
+          const existing = await asaas(`/accounts?cpfCnpj=${cleanCpfCnpj}`);
+          if (existing?.data?.length > 0) {
+            account = existing.data[0];
+            console.log("Found existing subaccount:", account.id);
+          } else {
+            console.error("Asaas error:", JSON.stringify(account.errors));
+            return json({ error: account.errors[0]?.description || "Erro ao criar subconta" }, 400);
+          }
+        } else {
+          console.error("Asaas error:", JSON.stringify(account.errors));
+          return json({ error: account.errors[0]?.description || "Erro ao criar subconta" }, 400);
+        }
       }
 
       console.log("Asaas subaccount created successfully:", JSON.stringify({
