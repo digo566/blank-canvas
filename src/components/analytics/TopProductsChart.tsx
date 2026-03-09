@@ -1,17 +1,48 @@
-import Plot from "react-plotly.js";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 interface TopProductsChartProps {
   data: Array<{ produto: string; vendas: number }>;
 }
 
 export function TopProductsChart({ data }: TopProductsChartProps) {
-  const chartData: any = [{
-    type: "bar",
-    x: data.map(d => d.produto),
-    y: data.map(d => d.vendas),
-    marker: { color: data.map((_, i) => `hsl(var(--primary) / ${1 - i * 0.15})`), line: { color: "hsl(var(--primary))", width: 2 } },
-    hovertemplate: "<b>%{x}</b><br>Vendas: %{y}<extra></extra>",
-  }];
-  const layout: any = { autosize: true, paper_bgcolor: "transparent", plot_bgcolor: "transparent", xaxis: { title: "", gridcolor: "hsl(var(--muted))", color: "hsl(var(--foreground))" }, yaxis: { title: "Vendas", gridcolor: "hsl(var(--muted))", color: "hsl(var(--foreground))" }, margin: { l: 60, r: 20, t: 20, b: 80 }, hovermode: "closest" };
-  return <div className="w-full h-[400px]"><Plot data={chartData} layout={layout} config={{ responsive: true, displayModeBar: false }} className="w-full h-full" useResizeHandler style={{ width: "100%", height: "100%" }} /></div>;
+  const chartData = data.map(item => ({
+    name: item.produto,
+    vendas: item.vendas
+  }));
+
+  return (
+    <div className="w-full h-[400px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chartData} layout="vertical" margin={{ top: 20, right: 30, left: 100, bottom: 20 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" opacity={0.3} />
+          <XAxis 
+            type="number"
+            stroke="hsl(var(--muted-foreground))"
+            tick={{ fill: 'hsl(var(--muted-foreground))' }}
+            label={{ value: 'Vendas', position: 'bottom', fill: 'hsl(var(--muted-foreground))' }}
+          />
+          <YAxis 
+            type="category"
+            dataKey="name"
+            stroke="hsl(var(--muted-foreground))"
+            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+            width={90}
+          />
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: 'hsl(var(--card))', 
+              border: '1px solid hsl(var(--border))',
+              borderRadius: '8px'
+            }}
+            labelStyle={{ color: 'hsl(var(--foreground))' }}
+          />
+          <Bar dataKey="vendas" radius={[0, 8, 8, 0]}>
+            {chartData.map((_, index) => (
+              <Cell key={index} fill={`hsl(var(--primary) / ${1 - index * 0.12})`} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
 }
