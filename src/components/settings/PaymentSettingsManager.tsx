@@ -177,10 +177,11 @@ export function PaymentSettingsManager() {
       });
       if (error) throw error;
       if (data?.status) {
-        setAccountStatus((prev) => prev ? { ...prev, status: data.status } : null);
-        if (data.onboardingUrl && accountStatus) {
-          setAccountStatus((prev) => prev ? { ...prev, onboardingUrl: data.onboardingUrl } : null);
-        }
+        setAccountStatus((prev) => prev ? { 
+          ...prev, 
+          status: data.status,
+          onboardingUrl: data.onboardingUrl || prev.onboardingUrl,
+        } : null);
         toast.success("Status atualizado!");
       }
     } catch {
