@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2, CheckCircle2, Clock, XCircle, ExternalLink, RefreshCw } from "lucide-react";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
@@ -21,15 +22,18 @@ export function PaymentSettingsManager() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [userId, setUserId] = useState<string>("");
+  const [userId, setUserId] = useState("");
   const [accountStatus, setAccountStatus] = useState<AccountStatus | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     name: "",
     cpfCnpj: "",
     email: "",
-    phone: "",
+    mobilePhone: "",
     birthDate: "",
+    companyType: "",
+    postalCode: "",
+    incomeValue: "5000",
   });
 
   useEffect(() => {
@@ -42,7 +46,6 @@ export function PaymentSettingsManager() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-
       const { data, error } = await supabase.functions.invoke("asaas-account", {
         body: { action: "get-status", restaurantId: user.id },
       });
@@ -56,8 +59,17 @@ export function PaymentSettingsManager() {
   };
 
   const handleCreateAccount = async () => {
-    if (!form.name || !form.cpfCnpj || !form.email) {
+    if (!form.name || !form.cpfCnpj || !form.email || !form.mobilePhone || !form.incomeValue) {
       toast.error("Preencha todos os campos obrigatórios");
+      return;
+    }
+    const cleanCpf = form.cpfCnpj.replace(/\D/g, "");
+    if (cleanCpf.length <= 11 && !form.birthDate) {
+      toast.error("Data de nascimento é obrigatória para CPF");
+      return;
+    }
+    if (cleanCpf.length > 11 && !form.companyType) {
+      toast.error("Tipo de empresa é obrigatório para CNPJ");
       return;
     }
     setCreating(true);
@@ -86,6 +98,9 @@ export function PaymentSettingsManager() {
       if (error) throw error;
       if (data?.status) {
         setAccountStatus((prev) => prev ? { ...prev, status: data.status } : null);
+        if (data.onboardingUrl && accountStatus) {
+          setAccountStatus((prev) => prev ? { ...prev, onboardingUrl: data.onboardingUrl } : null);
+        }
         toast.success("Status atualizado!");
       }
     } catch {
@@ -105,6 +120,8 @@ export function PaymentSettingsManager() {
         return <Badge variant="outline" className="text-muted-foreground"><XCircle className="w-3 h-3 mr-1" /> Não Ativada</Badge>;
     }
   };
+
+  const isCnpj = form.cpfCnpj.replace(/\D/g, "").length > 11;
 
   if (adminLoading || loading) {
     return <Card><CardContent className="flex items-center justify-center h-32"><Loader2 className="w-6 h-6 animate-spin" /></CardContent></Card>;
@@ -136,14 +153,56 @@ export function PaymentSettingsManager() {
             <div className="space-y-4 border rounded-lg p-4">
               <h4 className="font-medium">Dados do Responsável</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><Label>Nome ou Razão Social *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nome completo ou razão social" /></div>
-                <div><Label>CPF ou CNPJ *</Label><Input value={form.cpfCnpj} onChange={(e) => setForm({ ...form, cpfCnpj: e.target.value })} placeholder="000.000.000-00" /></div>
-                <div><Label>Email *</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="email@exemplo.com" /></div>
-                <div><Label>Telefone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="(11) 99999-9999" /></div>
-                <div><Label>Data de Nascimento *</Label><Input type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} /></div>
+                <div>
+                  <Label>Nome ou Razão Social *</Label>
+                  <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nome completo ou razão social" />
+                </div>
+                <div>
+                  <Label>CPF ou CNPJ *</Label>
+                  <Input value={form.cpfCnpj} onChange={(e) => setForm({ ...form, cpfCnpj: e.target.value })} placeholder="000.000.000-00" />
+                </div>
+                <div>
+                  <Label>Email *</Label>
+                  <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="email@exemplo.com" />
+                </div>
+                <div>
+                  <Label>Celular *</Label>
+                  <Input value={form.mobilePhone} onChange={(e) => setForm({ ...form, mobilePhone: e.target.value })} placeholder="(11) 99999-9999" />
+                </div>
+                {!isCnpj && (
+                  <div>
+                    <Label>Data de Nascimento *</Label>
+                    <Input type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} />
+                  </div>
+                )}
+                {isCnpj && (
+                  <div>
+                    <Label>Tipo de Empresa *</Label>
+                    <Select value={form.companyType} onValueChange={(v) => setForm({ ...form, companyType: v })}>
+                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="MEI">MEI</SelectItem>
+                        <SelectItem value="LIMITED">Limitada</SelectItem>
+                        <SelectItem value="INDIVIDUAL">Individual</SelectItem>
+                        <SelectItem value="ASSOCIATION">Associação</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <div>
+                  <Label>CEP *</Label>
+                  <Input value={form.postalCode} onChange={(e) => setForm({ ...form, postalCode: e.target.value })} placeholder="60000-000" />
+                </div>
+                <div>
+                  <Label>Faturamento Mensal (R$) *</Label>
+                  <Input type="number" value={form.incomeValue} onChange={(e) => setForm({ ...form, incomeValue: e.target.value })} placeholder="5000" />
+                </div>
               </div>
               <div className="flex gap-2">
-                <Button onClick={handleCreateAccount} disabled={creating}>{creating && <Loader2 className="w-4 h-4 animate-spin mr-2" />}Criar Conta Financeira</Button>
+                <Button onClick={handleCreateAccount} disabled={creating}>
+                  {creating && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                  Criar Conta Financeira
+                </Button>
                 <Button variant="outline" onClick={() => setShowForm(false)}>Cancelar</Button>
               </div>
             </div>
@@ -158,10 +217,15 @@ export function PaymentSettingsManager() {
             </div>
             <div className="flex gap-2">
               {accountStatus.onboardingUrl && (
-                <Button asChild><a href={accountStatus.onboardingUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4 mr-2" />Completar Cadastro Financeiro</a></Button>
+                <Button asChild>
+                  <a href={accountStatus.onboardingUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="w-4 h-4 mr-2" />Completar Cadastro Financeiro
+                  </a>
+                </Button>
               )}
               <Button variant="outline" onClick={handleRefreshStatus} disabled={refreshing}>
-                {refreshing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}Verificar Status
+                {refreshing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+                Verificar Status
               </Button>
             </div>
           </div>
