@@ -545,6 +545,11 @@ IMPORTANTE:
           }
 
           if (orderData.notes && String(orderData.notes).trim()) noteParts.push(`📝 Obs: ${String(orderData.notes).trim()}`);
+          
+          // Add CPF if provided
+          if (sanitizedCpf && sanitizedCpf.length === 11) {
+            noteParts.push(`📄 CPF na nota: ${sanitizedCpf}`);
+          }
 
           // Handle coupon
           const couponId = orderData.coupon_id || null;
