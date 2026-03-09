@@ -161,7 +161,7 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue="general">
-          <TabsList className="flex-wrap">
+          <TabsList className="w-full h-auto flex flex-wrap gap-1 justify-start">
             <TabsTrigger value="general">Geral</TabsTrigger>
             <TabsTrigger value="branding">Marca</TabsTrigger>
             <TabsTrigger value="delivery">Entrega</TabsTrigger>
