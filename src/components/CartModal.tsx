@@ -52,6 +52,8 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
     name: "",
     phone: "",
     address: "",
+    cpf: "",
+    wantsCpfOnInvoice: false,
     paymentMethod: "",
     needsChange: false,
     changeAmount: "",
