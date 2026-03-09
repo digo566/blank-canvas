@@ -88,6 +88,12 @@ const Admin = () => {
         .from("orders")
         .select("restaurant_id, total_amount");
 
+      // Load system feedbacks
+      const { data: feedbacksData } = await supabase
+        .from("system_feedback")
+        .select("*")
+        .order("created_at", { ascending: false });
+
       // Group orders by restaurant
       const revenueByRestaurant: Record<string, { orders: number; revenue: number }> = {};
       (ordersData || []).forEach((o) => {
@@ -104,13 +110,26 @@ const Admin = () => {
         totalRevenue: revenueByRestaurant[p.id]?.revenue || 0,
       }));
 
+      // Map feedbacks with restaurant names
+      const profileMap: Record<string, string> = {};
+      (profilesData || []).forEach((p) => {
+        profileMap[p.id] = p.restaurant_name;
+      });
+
+      const feedbacksWithNames: SystemFeedback[] = (feedbacksData || []).map((fb) => ({
+        ...fb,
+        restaurant_name: profileMap[fb.restaurant_id] || "Desconhecido",
+      }));
+
       setLeads(leadsData || []);
       setRestaurants(restaurantsWithRevenue);
+      setFeedbacks(feedbacksWithNames);
       setStats({
         totalLeads: leadsData?.length || 0,
         totalRestaurants: profilesData?.length || 0,
         totalOrders: ordersData?.length || 0,
         totalRevenue: ordersData?.reduce((sum, o) => sum + Number(o.total_amount), 0) || 0,
+        totalFeedbacks: feedbacksData?.length || 0,
       });
     } catch (error) {
       console.error(error);
