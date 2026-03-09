@@ -169,7 +169,6 @@ const Settings = () => {
             <TabsTrigger value="coupons">Cupons</TabsTrigger>
             <TabsTrigger value="loyalty">Fidelidade</TabsTrigger>
             <TabsTrigger value="fiscal">Fiscal</TabsTrigger>
-            <TabsTrigger value="feedback">Feedback</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-4">
