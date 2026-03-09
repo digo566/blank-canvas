@@ -383,6 +383,77 @@ const Admin = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="feedbacks" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  Opiniões dos Restaurantes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {feedbacks.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">Nenhuma opinião registrada ainda.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Data</TableHead>
+                          <TableHead>Restaurante</TableHead>
+                          <TableHead>Categoria</TableHead>
+                          <TableHead>Avaliação</TableHead>
+                          <TableHead className="max-w-[300px]">Mensagem</TableHead>
+                          <TableHead>Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {feedbacks.map((fb) => (
+                          <TableRow key={fb.id}>
+                            <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                              {format(new Date(fb.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
+                            </TableCell>
+                            <TableCell className="font-medium">{fb.restaurant_name}</TableCell>
+                            <TableCell>
+                              <Badge variant="secondary">{getCategoryLabel(fb.category)}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-0.5">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`h-3.5 w-3.5 ${
+                                      star <= fb.rating
+                                        ? "text-yellow-500 fill-yellow-500"
+                                        : "text-muted-foreground"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px]">
+                              <p className="text-sm truncate" title={fb.message}>{fb.message}</p>
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => deleteFeedback(fb.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>
