@@ -149,16 +149,16 @@ Deno.serve(async (req) => {
 
       let account = await asaas("/accounts", "POST", accountPayload);
 
-      // If CPF/CNPJ already in use, try to find existing subaccount or customer
+      // If CPF/CNPJ or email already in use, clean up and retry
       if (account.errors) {
-        const cpfInUse = account.errors.some((e: { description?: string }) =>
+        const alreadyInUse = account.errors.some((e: { description?: string }) =>
           e.description?.includes("já está em uso")
         );
 
-        if (cpfInUse) {
-          console.log("CPF/CNPJ already in use, searching existing accounts...");
+        if (alreadyInUse) {
+          console.log("Conflict detected, cleaning up existing records...");
           
-          // Try subaccounts first
+          // Try subaccounts first by CPF
           const existingSub = await asaas(`/accounts?cpfCnpj=${cleanCpfCnpj}`);
           console.log("Subaccount search result:", JSON.stringify(existingSub));
           
@@ -166,29 +166,33 @@ Deno.serve(async (req) => {
             account = existingSub.data[0];
             console.log("Found existing subaccount:", account.id);
           } else {
-            // Try customers
-            const existingCust = await asaas(`/customers?cpfCnpj=${cleanCpfCnpj}`);
-            console.log("Customer search result:", JSON.stringify(existingCust));
-            
-            if (existingCust?.data?.length > 0) {
-              // Delete ALL old customers with this CPF
-              for (const cust of existingCust.data) {
-                console.log("Deleting customer:", cust.id);
+            // Delete ALL customers by CPF
+            const custByCpf = await asaas(`/customers?cpfCnpj=${cleanCpfCnpj}`);
+            if (custByCpf?.data?.length > 0) {
+              for (const cust of custByCpf.data) {
+                console.log("Deleting customer (by CPF):", cust.id);
                 await asaas(`/customers/${cust.id}`, "DELETE");
               }
-              
-              // Wait a moment then retry
-              await new Promise((r) => setTimeout(r, 2000));
-              
-              // Retry subaccount creation
-              account = await asaas("/accounts", "POST", accountPayload);
-              if (account.errors) {
-                console.error("Retry failed:", JSON.stringify(account.errors));
-                return json({ error: account.errors[0]?.description || "Erro ao criar subconta" }, 400);
+            }
+
+            // Also delete ALL customers by email
+            const encodedEmail = encodeURIComponent(accountPayload.email as string);
+            const custByEmail = await asaas(`/customers?email=${encodedEmail}`);
+            console.log("Customer search by email:", JSON.stringify(custByEmail));
+            if (custByEmail?.data?.length > 0) {
+              for (const cust of custByEmail.data) {
+                console.log("Deleting customer (by email):", cust.id);
+                await asaas(`/customers/${cust.id}`, "DELETE");
               }
-            } else {
-              console.error("Could not find existing account for CPF");
-              return json({ error: "CPF/CNPJ já em uso na Asaas. Contate o suporte." }, 400);
+            }
+
+            // Wait then retry
+            await new Promise((r) => setTimeout(r, 3000));
+            
+            account = await asaas("/accounts", "POST", accountPayload);
+            if (account.errors) {
+              console.error("Retry failed:", JSON.stringify(account.errors));
+              return json({ error: account.errors[0]?.description || "Erro ao criar subconta. Tente com outro email." }, 400);
             }
           }
         } else {
