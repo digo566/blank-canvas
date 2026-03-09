@@ -246,6 +246,7 @@ REGRAS IMPORTANTES:
    - 🛒 Itens (quantidade x nome - preço)
    ${deliveryZones.length > 0 ? "- 🏘️ Bairro: [nome] - Taxa: R$ X,XX\n   " : ""}- 🎟️ Cupom (se aplicado): desconto de X
    - 💰 Total ${deliveryZones.length > 0 ? "(itens + taxa de entrega - desconto)" : ""}
+   - 📄 CPF na nota: informar se foi fornecido
    - 💳 Forma de pagamento
    - 📝 Observações
    
