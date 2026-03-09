@@ -339,248 +339,339 @@ IMPORTANTE:
     const data = await response.json();
     let aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "Desculpe, não consegui gerar uma resposta.";
 
+
     // Check if the AI response contains an order confirmation JSON
     let orderCreated = false;
-    let orderTrackingCode = null;
+    let orderTrackingCode: string | null = null;
 
-    const jsonOrderMatch = aiResponse.match(/```json_order\s*([\s\S]*?)```/);
-    if (jsonOrderMatch) {
+    const normalizeNumberString = (input: string) => {
+      const t = input.trim().replace(/[^0-9,.-]/g, "");
+      if (t.includes(",") && t.includes(".")) {
+        // Common pt-BR pattern: 1.234,56
+        return t.replace(/\./g, "").replace(",", ".");
+      }
+      if (t.includes(",")) return t.replace(",", ".");
+      return t;
+    };
+
+    const toNumber = (v: unknown, fallback = 0) => {
+      if (typeof v === "number") return Number.isFinite(v) ? v : fallback;
+      if (typeof v === "string") {
+        const n = Number(normalizeNumberString(v));
+        return Number.isFinite(n) ? n : fallback;
+      }
+      return fallback;
+    };
+
+    const extractOrderJson = (text: string): { raw: string; json: any } | null => {
+      // 1) Prefer fenced blocks (json_order OR json) - Gemini sometimes outputs ```json```
+      const fenced = text.match(/```(?:json_order|json)\s*([\s\S]*?)```/i);
+      if (fenced?.[1]) {
+        const raw = fenced[0];
+        const jsonText = fenced[1].trim();
+        try {
+          return { raw, json: JSON.parse(jsonText) };
+        } catch {
+          // fallthrough
+        }
+      }
+
+      // 2) Heuristic: find an object containing "order_confirmed": true even without code fences
+      const keyIdx = text.search(/"order_confirmed"\s*:\s*true/i);
+      if (keyIdx === -1) return null;
+
+      // Find nearest '{' before the key
+      const start = text.lastIndexOf("{", keyIdx);
+      if (start === -1) return null;
+
+      // Scan forward to matching '}'
+      let depth = 0;
+      for (let i = start; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === "{") depth++;
+        if (ch === "}") depth--;
+        if (depth === 0) {
+          const raw = text.slice(start, i + 1);
+          try {
+            return { raw, json: JSON.parse(raw) };
+          } catch {
+            return null;
+          }
+        }
+      }
+
+      return null;
+    };
+
+    const extracted = extractOrderJson(aiResponse);
+
+    if (extracted) {
       try {
-        const orderData = JSON.parse(jsonOrderMatch[1].trim());
-        
-        if (orderData.order_confirmed && orderData.items?.length > 0) {
+        const orderData = extracted.json;
+
+        if (orderData?.order_confirmed && Array.isArray(orderData.items) && orderData.items.length > 0) {
           // Sanitize phone: keep only digits
-          const sanitizedPhone = (orderData.customer_phone || "").replace(/\D/g, "");
-          const sanitizedName = (orderData.customer_name || "").trim();
-          const sanitizedAddress = (orderData.customer_address || "").trim();
-          
+          const sanitizedPhone = String(orderData.customer_phone || "").replace(/\D/g, "");
+          const sanitizedName = String(orderData.customer_name || "").trim();
+          const sanitizedAddress = String(orderData.customer_address || "").trim();
+
           console.log("Order confirmed. Name:", sanitizedName, "Phone:", sanitizedPhone, "Address:", sanitizedAddress);
 
-          // 1. Find or create client
+          // 1. Find or create client (only if we have a phone)
           let clientId: string | null = null;
-          
-          // Try to find by phone (exact match and also with +55 prefix)
-          const phonesToSearch = [sanitizedPhone];
-          if (sanitizedPhone.length === 11 || sanitizedPhone.length === 10) {
-            phonesToSearch.push(`+55${sanitizedPhone}`);
-          }
-          
-          const { data: existingClients } = await supabase
-            .from("clients")
-            .select("id")
-            .eq("restaurant_id", restaurantId)
-            .in("phone", phonesToSearch)
-            .limit(1);
 
-          if (existingClients && existingClients.length > 0) {
-            clientId = existingClients[0].id;
-            await supabase.from("clients").update({
-              name: sanitizedName,
-              address: sanitizedAddress,
-            }).eq("id", clientId);
-          } else {
-            const { data: newClient, error: clientError } = await supabase
-              .from("clients")
-              .insert({
-                restaurant_id: restaurantId,
-                name: sanitizedName,
-                phone: sanitizedPhone,
-                address: sanitizedAddress,
-              })
-              .select("id")
-              .single();
-
-            if (clientError) {
-              console.error("Error creating client:", clientError);
-            } else {
-              clientId = newClient.id;
+          if (sanitizedPhone) {
+            // Try to find by phone (exact match and also with +55 prefix)
+            const phonesToSearch = [sanitizedPhone];
+            if (sanitizedPhone.length === 11 || sanitizedPhone.length === 10) {
+              phonesToSearch.push(`+55${sanitizedPhone}`);
             }
-          }
 
-          // 2. Calculate total
-          let totalAmount = 0;
-          for (const item of orderData.items) {
-            let itemTotal = Number(item.unit_price) * Number(item.quantity);
-            if (item.options) {
-              for (const opt of item.options) {
-                itemTotal += Number(opt.price_modifier || 0) * Number(item.quantity);
+            const { data: existingClients } = await supabase
+              .from("clients")
+              .select("id")
+              .eq("restaurant_id", restaurantId)
+              .in("phone", phonesToSearch)
+              .limit(1);
+
+            if (existingClients && existingClients.length > 0) {
+              clientId = existingClients[0].id;
+              await supabase
+                .from("clients")
+                .update({ name: sanitizedName, address: sanitizedAddress })
+                .eq("id", clientId);
+            } else {
+              const { data: newClient, error: clientError } = await supabase
+                .from("clients")
+                .insert({
+                  restaurant_id: restaurantId,
+                  name: sanitizedName || "Cliente",
+                  phone: sanitizedPhone,
+                  address: sanitizedAddress || null,
+                })
+                .select("id")
+                .single();
+
+              if (clientError) {
+                console.error("Error creating client:", clientError);
+              } else {
+                clientId = newClient.id;
               }
             }
-            totalAmount += itemTotal;
           }
 
-          // Use AI's total if available
-          if (orderData.total_amount && Number(orderData.total_amount) > 0) {
-            totalAmount = Number(orderData.total_amount);
+          // Resolve products more robustly
+          const normalizeName = (s: unknown) => String(s || "").toLowerCase().trim();
+          const resolveProduct = (item: any) => {
+            const id = item?.product_id;
+            const name = normalizeName(item?.product_name);
+            const exact = products.find((p: any) => p.id === id || normalizeName(p.name) === name);
+            if (exact) return exact;
+
+            // contains match (helps when model adds size/extra text)
+            const contains = products.find((p: any) => {
+              const pn = normalizeName(p.name);
+              return (name && (name.includes(pn) || pn.includes(name)));
+            });
+            return contains || null;
+          };
+
+          // 2. Calculate total (never NaN)
+          let itemsTotal = 0;
+          const resolvedItems: Array<{ product: any; quantity: number; unit_price: number; options: any[] }>=[];
+
+          for (const item of orderData.items) {
+            const matchedProduct = resolveProduct(item);
+            if (!matchedProduct) {
+              console.warn("Unresolved product in order JSON:", item);
+              continue;
+            }
+
+            const qty = Math.max(1, Math.floor(toNumber(item.quantity, 1)));
+            const unitPrice = toNumber(item.unit_price, Number(matchedProduct.price));
+
+            const options = Array.isArray(item.options) ? item.options : [];
+            let optionMods = 0;
+            for (const opt of options) {
+              optionMods += toNumber(opt.price_modifier, 0);
+            }
+
+            const lineTotal = (unitPrice + optionMods) * qty;
+            itemsTotal += lineTotal;
+
+            resolvedItems.push({ product: matchedProduct, quantity: qty, unit_price: Number(matchedProduct.price), options });
           }
+
+          const deliveryFee = toNumber(orderData.delivery_fee, 0);
+          const couponDiscount = toNumber(orderData.coupon_discount, 0);
+
+          // Use AI's total if valid, else compute
+          const aiTotal = toNumber(orderData.total_amount, 0);
+          const totalAmount = aiTotal > 0 ? aiTotal : Math.max(0, itemsTotal + deliveryFee - couponDiscount);
 
           // Map payment method
-          let paymentMethod = orderData.payment_method || "dinheiro";
+          let paymentMethod = String(orderData.payment_method || "dinheiro");
           const pmMap: Record<string, string> = {
-            "pix": "Pix",
-            "dinheiro": "Dinheiro", 
-            "cartao": "Cartão",
+            pix: "Pix",
+            dinheiro: "Dinheiro",
+            cartao: "Cartão",
             "cartão": "Cartão",
-            "credito": "Cartão",
-            "debito": "Cartão",
+            credito: "Cartão",
+            debito: "Cartão",
           };
           paymentMethod = pmMap[paymentMethod.toLowerCase()] || paymentMethod;
 
           // Build notes - organized and clear
           const noteParts: string[] = [];
-          noteParts.push(`👤 Cliente: ${sanitizedName}`);
-          noteParts.push(`📞 Tel: ${sanitizedPhone}`);
-          const deliveryType = orderData.delivery_type || "delivery";
+          noteParts.push(`👤 Cliente: ${sanitizedName || "(não informado)"}`);
+          noteParts.push(`📞 Tel: ${sanitizedPhone || "(não informado)"}`);
+
+          const deliveryType = String(orderData.delivery_type || "delivery");
           if (deliveryType === "pickup") {
             noteParts.push("🏪 Retirada no local");
           } else {
-            noteParts.push(`📍 Endereço: ${sanitizedAddress}`);
+            noteParts.push(`📍 Endereço: ${sanitizedAddress || "(não informado)"}`);
             if (orderData.delivery_neighborhood) {
-              noteParts.push(`🏘️ Bairro: ${orderData.delivery_neighborhood}`);
+              noteParts.push(`🏘️ Bairro: ${String(orderData.delivery_neighborhood)}`);
             }
-            const deliveryFee = Number(orderData.delivery_fee || 0);
             if (deliveryFee > 0) {
               noteParts.push(`🛵 Taxa de entrega: R$ ${deliveryFee.toFixed(2)}`);
             }
           }
-          if (orderData.notes && orderData.notes.trim()) noteParts.push(`📝 Obs: ${orderData.notes.trim()}`);
-          
+
+          if (orderData.notes && String(orderData.notes).trim()) noteParts.push(`📝 Obs: ${String(orderData.notes).trim()}`);
+
           // Handle coupon
-          const couponDiscount = Number(orderData.coupon_discount || 0);
           const couponId = orderData.coupon_id || null;
           if (orderData.coupon_code && couponDiscount > 0) {
-            noteParts.push(`🎟️ Cupom: ${orderData.coupon_code} (-R$ ${couponDiscount.toFixed(2)})`);
+            noteParts.push(`🎟️ Cupom: ${String(orderData.coupon_code)} (-R$ ${couponDiscount.toFixed(2)})`);
           }
           noteParts.push("📱 Pedido via Atendente Virtual");
 
-          // 3. Create order
-          const orderDeliveryFee = Number(orderData.delivery_fee || 0);
-          const { data: newOrder, error: orderError } = await supabase
-            .from("orders")
-            .insert({
-              restaurant_id: restaurantId,
-              client_id: clientId,
-              total_amount: totalAmount,
-              delivery_fee: orderDeliveryFee,
-              coupon_id: couponId,
-              coupon_discount: couponDiscount,
-              payment_method: paymentMethod,
-              needs_change: orderData.needs_change || false,
-              change_amount: orderData.change_amount || null,
-              notes: noteParts.join("\n"),
-              status: "pending",
-            })
-            .select("id, tracking_code")
-            .single();
-
-          if (orderError) {
-            console.error("Error creating order:", orderError);
+          if (resolvedItems.length === 0) {
+            console.warn("No valid items resolved; skipping order creation.");
           } else {
-            orderTrackingCode = newOrder.tracking_code;
-            orderCreated = true;
+            // Generate tracking code (DB has no trigger currently)
+            const { data: trackingCodeFromRpc, error: tcError } = await supabase.rpc("generate_tracking_code" as any);
+            if (tcError) console.error("Error generating tracking code:", tcError);
 
-            // Increment coupon usage
-            if (couponId) {
-              await supabase.rpc("increment_coupon_usage" as any, { coupon_id_param: couponId }).catch(() => {
-                // Fallback: direct update
-                supabase.from("coupons").update({ current_uses: coupons.find((c: any) => c.id === couponId)?.current_uses + 1 || 1 }).eq("id", couponId);
-              });
-            }
+            // 3. Create order
+            const { data: newOrder, error: orderError } = await supabase
+              .from("orders")
+              .insert({
+                restaurant_id: restaurantId,
+                client_id: clientId,
+                tracking_code: trackingCodeFromRpc || null,
+                total_amount: totalAmount,
+                delivery_fee: deliveryFee,
+                coupon_id: couponId,
+                coupon_discount: couponDiscount,
+                payment_method: paymentMethod,
+                needs_change: Boolean(orderData.needs_change || false),
+                change_amount: orderData.needs_change ? toNumber(orderData.change_amount, 0) : null,
+                notes: noteParts.join("\n"),
+                status: "pending",
+              })
+              .select("id, tracking_code")
+              .single();
 
-            // 4. Create order items
-            for (const item of orderData.items) {
-              // Try to find the product by ID first, then by name
-              let productId = item.product_id;
-              let unitPrice = Number(item.unit_price);
+            if (orderError) {
+              console.error("Error creating order:", orderError);
+            } else {
+              orderTrackingCode = newOrder.tracking_code;
+              orderCreated = true;
 
-              // Validate product exists
-              const matchedProduct = products.find((p: any) => 
-                p.id === productId || 
-                p.name.toLowerCase().trim() === (item.product_name || "").toLowerCase().trim()
-              );
-
-              if (matchedProduct) {
-                productId = matchedProduct.id;
-                unitPrice = Number(matchedProduct.price);
+              // Increment coupon usage
+              if (couponId) {
+                await supabase.rpc("increment_coupon_usage" as any, { coupon_id_param: couponId }).catch(() => {
+                  supabase
+                    .from("coupons")
+                    .update({ current_uses: (coupons.find((c: any) => c.id === couponId)?.current_uses ?? 0) + 1 })
+                    .eq("id", couponId);
+                });
               }
 
-              let optionsTotal = 0;
-              if (item.options) {
-                for (const opt of item.options) {
-                  optionsTotal += Number(opt.price_modifier || 0);
-                }
-              }
+              // 4. Create order items
+              for (const item of resolvedItems) {
+                const options = item.options || [];
+                let optionsTotal = 0;
+                for (const opt of options) optionsTotal += toNumber(opt.price_modifier, 0);
 
-              const subtotal = (unitPrice + optionsTotal) * Number(item.quantity);
+                const subtotal = (item.unit_price + optionsTotal) * item.quantity;
 
-              const { data: newItem, error: itemError } = await supabase
-                .from("order_items")
-                .insert({
-                  order_id: newOrder.id,
-                  product_id: productId,
-                  quantity: Number(item.quantity),
-                  unit_price: unitPrice,
-                  subtotal: subtotal,
-                })
-                .select("id")
-                .single();
+                const { data: newItem, error: itemError } = await supabase
+                  .from("order_items")
+                  .insert({
+                    order_id: newOrder.id,
+                    product_id: item.product.id,
+                    quantity: item.quantity,
+                    unit_price: item.unit_price,
+                    subtotal,
+                  })
+                  .select("id")
+                  .single();
 
-              if (itemError) {
-                console.error("Error creating order item:", itemError);
-              } else if (item.options && item.options.length > 0 && newItem) {
-                // 5. Create order item options
-                for (const opt of item.options) {
-                  const matchedOption = optionItems.find((oi: any) =>
-                    oi.id === opt.option_item_id ||
-                    oi.name.toLowerCase().trim() === (opt.option_item_name || "").toLowerCase().trim()
-                  );
+                if (itemError) {
+                  console.error("Error creating order item:", itemError);
+                } else if (Array.isArray(options) && options.length > 0 && newItem) {
+                  // 5. Create order item options (best-effort)
+                  for (const opt of options) {
+                    const matchedOption = optionItems.find((oi: any) =>
+                      oi.id === opt.option_item_id ||
+                      normalizeName(oi.name) === normalizeName(opt.option_item_name)
+                    );
 
-                  if (matchedOption) {
-                    await supabase.from("order_item_options").insert({
-                      order_item_id: newItem.id,
-                      option_item_id: matchedOption.id,
-                      option_item_name: matchedOption.name,
-                      price_modifier: Number(matchedOption.price_modifier || 0),
-                    });
+                    if (matchedOption) {
+                      const { error: optError } = await supabase.from("order_item_options").insert({
+                        order_item_id: newItem.id,
+                        option_item_id: matchedOption.id,
+                        option_item_name: matchedOption.name,
+                        price_modifier: toNumber(matchedOption.price_modifier, 0),
+                      });
+                      if (optError) console.error("Error creating order item option:", optError);
+                    }
                   }
                 }
               }
-            }
 
-            console.log("Order created successfully:", newOrder.id, "tracking:", orderTrackingCode);
+              console.log("Order created successfully:", newOrder.id, "tracking:", orderTrackingCode);
 
-            // Update loyalty progress
-            if (loyaltyConfig && sanitizedPhone) {
-              try {
-                const { data: existingProgress } = await supabase
-                  .from("loyalty_progress")
-                  .select("id, total_spent, rewards_earned")
-                  .eq("restaurant_id", restaurantId)
-                  .eq("phone", sanitizedPhone)
-                  .maybeSingle();
+              // Update loyalty progress
+              if (loyaltyConfig && sanitizedPhone) {
+                try {
+                  const { data: existingProgress } = await supabase
+                    .from("loyalty_progress")
+                    .select("id, total_spent, rewards_earned")
+                    .eq("restaurant_id", restaurantId)
+                    .eq("phone", sanitizedPhone)
+                    .maybeSingle();
 
-                const orderTotal = totalAmount;
-                if (existingProgress) {
-                  const newTotal = Number(existingProgress.total_spent) + orderTotal;
-                  const newRewards = Math.floor(newTotal / Number(loyaltyConfig.spend_threshold));
-                  await supabase.from("loyalty_progress").update({
-                    total_spent: newTotal,
-                    rewards_earned: newRewards,
-                    client_id: clientId,
-                    updated_at: new Date().toISOString(),
-                  }).eq("id", existingProgress.id);
-                } else {
-                  const newRewards = Math.floor(orderTotal / Number(loyaltyConfig.spend_threshold));
-                  await supabase.from("loyalty_progress").insert({
-                    restaurant_id: restaurantId,
-                    client_id: clientId,
-                    phone: sanitizedPhone,
-                    total_spent: orderTotal,
-                    rewards_earned: newRewards,
-                  });
+                  const orderTotal = totalAmount;
+                  if (existingProgress) {
+                    const newTotal = Number(existingProgress.total_spent) + orderTotal;
+                    const newRewards = Math.floor(newTotal / Number(loyaltyConfig.spend_threshold));
+                    await supabase
+                      .from("loyalty_progress")
+                      .update({
+                        total_spent: newTotal,
+                        rewards_earned: newRewards,
+                        client_id: clientId,
+                        updated_at: new Date().toISOString(),
+                      })
+                      .eq("id", existingProgress.id);
+                  } else {
+                    const newRewards = Math.floor(orderTotal / Number(loyaltyConfig.spend_threshold));
+                    await supabase.from("loyalty_progress").insert({
+                      restaurant_id: restaurantId,
+                      client_id: clientId,
+                      phone: sanitizedPhone,
+                      total_spent: orderTotal,
+                      rewards_earned: newRewards,
+                    });
+                  }
+                } catch (loyaltyError) {
+                  console.error("Error updating loyalty:", loyaltyError);
                 }
-              } catch (loyaltyError) {
-                console.error("Error updating loyalty:", loyaltyError);
               }
             }
           }
@@ -589,8 +680,11 @@ IMPORTANTE:
         console.error("Error parsing order JSON:", parseError);
       }
 
-      // Remove the JSON block from the visible message
-      aiResponse = aiResponse.replace(/```json_order\s*[\s\S]*?```/, "").trim();
+      // Remove the JSON from the visible message (remove fenced block if present, else remove raw object)
+      aiResponse = aiResponse
+        .replace(/```(?:json_order|json)\s*[\s\S]*?```/i, "")
+        .replace(extracted.raw, "")
+        .trim();
 
       // Append tracking code info if order was created
       if (orderCreated && orderTrackingCode) {
