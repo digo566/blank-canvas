@@ -17,6 +17,34 @@ interface AccountStatus {
   createdAt: string | null;
 }
 
+function formatCpfCnpj(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 14);
+  if (digits.length <= 11) {
+    return digits
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+  }
+  return digits
+    .replace(/(\d{2})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1/$2")
+    .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
+}
+
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 10) {
+    return digits.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d)/, "$1-$2");
+  }
+  return digits.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
+}
+
+function formatCep(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 8);
+  return digits.replace(/(\d{5})(\d)/, "$1-$2");
+}
+
 export function PaymentSettingsManager() {
   const { isAdmin, loading: adminLoading } = useAdminCheck();
   const [loading, setLoading] = useState(true);
@@ -64,11 +92,25 @@ export function PaymentSettingsManager() {
       return;
     }
     const cleanCpf = form.cpfCnpj.replace(/\D/g, "");
-    if (cleanCpf.length <= 11 && !form.birthDate) {
+    if (cleanCpf.length !== 11 && cleanCpf.length !== 14) {
+      toast.error(`CPF deve ter 11 dígitos e CNPJ 14 dígitos. Você informou ${cleanCpf.length} dígitos.`);
+      return;
+    }
+    const cleanPhone = form.mobilePhone.replace(/\D/g, "");
+    if (cleanPhone.length < 10 || cleanPhone.length > 11) {
+      toast.error("Telefone inválido. Informe DDD + número.");
+      return;
+    }
+    const cleanCep = form.postalCode.replace(/\D/g, "");
+    if (form.postalCode && cleanCep.length !== 8) {
+      toast.error("CEP inválido. Deve ter 8 dígitos.");
+      return;
+    }
+    if (cleanCpf.length === 11 && !form.birthDate) {
       toast.error("Data de nascimento é obrigatória para CPF");
       return;
     }
-    if (cleanCpf.length > 11 && !form.companyType) {
+    if (cleanCpf.length === 14 && !form.companyType) {
       toast.error("Tipo de empresa é obrigatório para CNPJ");
       return;
     }
@@ -122,6 +164,7 @@ export function PaymentSettingsManager() {
   };
 
   const isCnpj = form.cpfCnpj.replace(/\D/g, "").length > 11;
+  const cpfDigits = form.cpfCnpj.replace(/\D/g, "").length;
 
   if (adminLoading || loading) {
     return <Card><CardContent className="flex items-center justify-center h-32"><Loader2 className="w-6 h-6 animate-spin" /></CardContent></Card>;
@@ -159,7 +202,17 @@ export function PaymentSettingsManager() {
                 </div>
                 <div>
                   <Label>CPF ou CNPJ *</Label>
-                  <Input value={form.cpfCnpj} onChange={(e) => setForm({ ...form, cpfCnpj: e.target.value })} placeholder="000.000.000-00" />
+                  <Input
+                    value={form.cpfCnpj}
+                    onChange={(e) => setForm({ ...form, cpfCnpj: formatCpfCnpj(e.target.value) })}
+                    placeholder="000.000.000-00"
+                    maxLength={18}
+                  />
+                  {cpfDigits > 0 && cpfDigits !== 11 && cpfDigits !== 14 && (
+                    <p className="text-xs text-destructive mt-1">
+                      {cpfDigits < 11 ? `Faltam ${11 - cpfDigits} dígitos para CPF` : cpfDigits < 14 ? `Faltam ${14 - cpfDigits} dígitos para CNPJ` : ""}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label>Email *</Label>
@@ -167,7 +220,12 @@ export function PaymentSettingsManager() {
                 </div>
                 <div>
                   <Label>Celular *</Label>
-                  <Input value={form.mobilePhone} onChange={(e) => setForm({ ...form, mobilePhone: e.target.value })} placeholder="(11) 99999-9999" />
+                  <Input
+                    value={form.mobilePhone}
+                    onChange={(e) => setForm({ ...form, mobilePhone: formatPhone(e.target.value) })}
+                    placeholder="(85) 99999-9999"
+                    maxLength={15}
+                  />
                 </div>
                 {!isCnpj && (
                   <div>
@@ -190,8 +248,13 @@ export function PaymentSettingsManager() {
                   </div>
                 )}
                 <div>
-                  <Label>CEP *</Label>
-                  <Input value={form.postalCode} onChange={(e) => setForm({ ...form, postalCode: e.target.value })} placeholder="60000-000" />
+                  <Label>CEP</Label>
+                  <Input
+                    value={form.postalCode}
+                    onChange={(e) => setForm({ ...form, postalCode: formatCep(e.target.value) })}
+                    placeholder="60000-000"
+                    maxLength={9}
+                  />
                 </div>
                 <div>
                   <Label>Faturamento Mensal (R$) *</Label>
