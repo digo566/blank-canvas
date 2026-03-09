@@ -172,10 +172,14 @@ Deno.serve(async (req) => {
             console.log("Customer search result:", JSON.stringify(existingCust));
             
             if (existingCust?.data?.length > 0) {
-              // Delete old customer and retry creating subaccount
-              const custId = existingCust.data[0].id;
-              console.log("Found existing customer, deleting:", custId);
-              await asaas(`/customers/${custId}`, "DELETE");
+              // Delete ALL old customers with this CPF
+              for (const cust of existingCust.data) {
+                console.log("Deleting customer:", cust.id);
+                await asaas(`/customers/${cust.id}`, "DELETE");
+              }
+              
+              // Wait a moment then retry
+              await new Promise((r) => setTimeout(r, 2000));
               
               // Retry subaccount creation
               account = await asaas("/accounts", "POST", accountPayload);
