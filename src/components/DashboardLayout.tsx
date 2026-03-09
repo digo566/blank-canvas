@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { NavLink } from "@/components/NavLink";
 import { 
   LayoutDashboard, Package, ShoppingBag, Users, LogOut, Menu,
-  ShoppingCart, BarChart3, Settings, Crown, AlertTriangle
+  ShoppingCart, BarChart3, Settings, Crown, AlertTriangle, MessageSquare
 } from "lucide-react";
 import grapeLogo from "@/assets/grape-logo.png";
 import { toast } from "sonner";
