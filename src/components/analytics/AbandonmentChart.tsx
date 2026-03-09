@@ -48,7 +48,7 @@ export function AbandonmentChart({ rate }: { rate: number }) {
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>0%</span>
                 <span className="text-primary">20% (meta)</span>
-                <span className="text-yellow-600">35%</span>
+                <span className="text-chart-2">35%</span>
                 <span>100%</span>
               </div>
             </div>
