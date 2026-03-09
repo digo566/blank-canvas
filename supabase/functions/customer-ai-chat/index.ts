@@ -226,8 +226,8 @@ Confirmou? Adicione JSON:
           system_instruction: { parts: [{ text: systemPrompt }] },
           contents: geminiContents,
           generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 2048,
+            temperature: 0.6,
+            maxOutputTokens: 600,
           },
         }),
       }
