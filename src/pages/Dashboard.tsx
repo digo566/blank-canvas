@@ -126,7 +126,8 @@ const Dashboard = () => {
       });
 
       setRecentOrders(orders || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error("Dashboard error:", error);
       toast.error("Erro ao carregar dados do dashboard");
     } finally {
       setLoading(false);

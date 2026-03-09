@@ -345,9 +345,6 @@ const Settings = () => {
             <FiscalSettingsManager />
           </TabsContent>
 
-          <TabsContent value="feedback" className="space-y-4">
-            <SystemFeedbackForm />
-          </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>
