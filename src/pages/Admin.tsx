@@ -389,6 +389,10 @@ const Admin = () => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="revenue" className="mt-4">
+            <RestaurantRevenuePanel restaurants={restaurants.map(r => ({ id: r.id, restaurant_name: r.restaurant_name }))} />
+          </TabsContent>
+
           <TabsContent value="feedbacks" className="mt-4">
             <Card>
               <CardHeader>
