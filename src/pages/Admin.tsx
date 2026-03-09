@@ -30,10 +30,21 @@ interface Restaurant {
   totalRevenue: number;
 }
 
+interface SystemFeedback {
+  id: string;
+  restaurant_id: string;
+  restaurant_name?: string;
+  category: string;
+  rating: number;
+  message: string;
+  created_at: string;
+}
+
 const Admin = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [stats, setStats] = useState({ totalLeads: 0, totalRestaurants: 0, totalOrders: 0, totalRevenue: 0 });
+  const [feedbacks, setFeedbacks] = useState<SystemFeedback[]>([]);
+  const [stats, setStats] = useState({ totalLeads: 0, totalRestaurants: 0, totalOrders: 0, totalRevenue: 0, totalFeedbacks: 0 });
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
