@@ -67,6 +67,7 @@ const App = () => (
                 <Route path="/r/:restaurantId" element={<PublicStore />} />
                 <Route path="/chat/:restaurantId" element={<AIAttendant />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/feedbacks" element={<Feedbacks />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/subscription" element={<Subscription />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

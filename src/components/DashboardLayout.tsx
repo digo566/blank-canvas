@@ -51,7 +51,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { to: "/customers", icon: Users, label: "Clientes" },
     { to: "/abandoned-carts", icon: ShoppingCart, label: "Carrinhos" },
     { to: "/settings", icon: Settings, label: "Configurações" },
-    ...(isAdmin ? [{ to: "/admin", icon: Crown, label: "Admin Grape" }] : []),
+    ...(isAdmin ? [
+      { to: "/admin", icon: Crown, label: "Admin Grape" },
+      { to: "/feedbacks", icon: MessageSquare, label: "Feedbacks" }
+    ] : []),
   ];
 
   const NavItems = () => (

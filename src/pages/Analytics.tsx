@@ -326,13 +326,6 @@ export default function Analytics() {
                 <PerformanceChart data={data} />
               </Card>
             </div>
-
-            <FeedbackDialog
-              open={feedbackDialog.open}
-              onOpenChange={(open) => setFeedbackDialog((prev) => ({ ...prev, open }))}
-              suggestion={feedbackDialog.suggestion}
-              suggestionType={feedbackDialog.type}
-            />
           </>
         )}
       </div>
