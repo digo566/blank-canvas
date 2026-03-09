@@ -1138,6 +1138,10 @@ export type Database = {
       }
       profiles: {
         Row: {
+          asaas_account_status: string | null
+          asaas_created_at: string | null
+          asaas_customer_id: string | null
+          asaas_onboarding_url: string | null
           cover_url: string | null
           created_at: string | null
           delivery_mode: string
@@ -1158,6 +1162,10 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          asaas_account_status?: string | null
+          asaas_created_at?: string | null
+          asaas_customer_id?: string | null
+          asaas_onboarding_url?: string | null
           cover_url?: string | null
           created_at?: string | null
           delivery_mode?: string
@@ -1178,6 +1186,10 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          asaas_account_status?: string | null
+          asaas_created_at?: string | null
+          asaas_customer_id?: string | null
+          asaas_onboarding_url?: string | null
           cover_url?: string | null
           created_at?: string | null
           delivery_mode?: string
