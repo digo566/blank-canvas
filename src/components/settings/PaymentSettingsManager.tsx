@@ -126,6 +126,14 @@ export function PaymentSettingsManager() {
       toast.error(`CPF deve ter 11 dígitos e CNPJ 14 dígitos. Você informou ${cleanCpf.length} dígitos.`);
       return;
     }
+    if (cleanCpf.length === 11 && !isValidCpf(cleanCpf)) {
+      toast.error("CPF inválido. Verifique os dígitos informados.");
+      return;
+    }
+    if (cleanCpf.length === 14 && !isValidCnpj(cleanCpf)) {
+      toast.error("CNPJ inválido. Verifique os dígitos informados.");
+      return;
+    }
     const cleanPhone = form.mobilePhone.replace(/\D/g, "");
     if (cleanPhone.length < 10 || cleanPhone.length > 11) {
       toast.error("Telefone inválido. Informe DDD + número.");
