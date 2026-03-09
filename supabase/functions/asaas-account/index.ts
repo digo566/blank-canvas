@@ -125,6 +125,48 @@ Deno.serve(async (req) => {
       if (cleanCpfCnpj.length !== 11 && cleanCpfCnpj.length !== 14) {
         return json({ error: `CPF deve ter 11 dígitos e CNPJ 14 dígitos. Você informou ${cleanCpfCnpj.length} dígitos.` }, 400);
       }
+
+      // Validate CPF check digits
+      if (cleanCpfCnpj.length === 11) {
+        if (/^(\d)\1{10}$/.test(cleanCpfCnpj)) {
+          return json({ error: "CPF inválido." }, 400);
+        }
+        let sum = 0;
+        for (let i = 0; i < 9; i++) sum += parseInt(cleanCpfCnpj[i]) * (10 - i);
+        let check = 11 - (sum % 11);
+        if (check >= 10) check = 0;
+        if (parseInt(cleanCpfCnpj[9]) !== check) {
+          return json({ error: "CPF inválido. Verifique os dígitos." }, 400);
+        }
+        sum = 0;
+        for (let i = 0; i < 10; i++) sum += parseInt(cleanCpfCnpj[i]) * (11 - i);
+        check = 11 - (sum % 11);
+        if (check >= 10) check = 0;
+        if (parseInt(cleanCpfCnpj[10]) !== check) {
+          return json({ error: "CPF inválido. Verifique os dígitos." }, 400);
+        }
+      }
+
+      // Validate CNPJ check digits
+      if (cleanCpfCnpj.length === 14) {
+        if (/^(\d)\1{13}$/.test(cleanCpfCnpj)) {
+          return json({ error: "CNPJ inválido." }, 400);
+        }
+        const w1 = [5,4,3,2,9,8,7,6,5,4,3,2];
+        const w2 = [6,5,4,3,2,9,8,7,6,5,4,3,2];
+        let sum = 0;
+        for (let i = 0; i < 12; i++) sum += parseInt(cleanCpfCnpj[i]) * w1[i];
+        let check = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+        if (parseInt(cleanCpfCnpj[12]) !== check) {
+          return json({ error: "CNPJ inválido. Verifique os dígitos." }, 400);
+        }
+        sum = 0;
+        for (let i = 0; i < 13; i++) sum += parseInt(cleanCpfCnpj[i]) * w2[i];
+        check = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+        if (parseInt(cleanCpfCnpj[13]) !== check) {
+          return json({ error: "CNPJ inválido. Verifique os dígitos." }, 400);
+        }
+      }
       
       const isCompany = cleanCpfCnpj.length === 14;
       
