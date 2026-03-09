@@ -12,6 +12,7 @@ import { DeliveryZonesManager } from "@/components/settings/DeliveryZonesManager
 import { CouponsManager } from "@/components/settings/CouponsManager";
 import { FiscalSettingsManager } from "@/components/settings/FiscalSettingsManager";
 import { LoyaltyManager } from "@/components/settings/LoyaltyManager";
+import { SystemFeedbackForm } from "@/components/settings/SystemFeedbackForm";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -160,7 +161,7 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue="general">
-          <TabsList>
+          <TabsList className="flex-wrap">
             <TabsTrigger value="general">Geral</TabsTrigger>
             <TabsTrigger value="branding">Marca</TabsTrigger>
             <TabsTrigger value="delivery">Entrega</TabsTrigger>
@@ -168,6 +169,7 @@ const Settings = () => {
             <TabsTrigger value="coupons">Cupons</TabsTrigger>
             <TabsTrigger value="loyalty">Fidelidade</TabsTrigger>
             <TabsTrigger value="fiscal">Fiscal</TabsTrigger>
+            <TabsTrigger value="feedback">Feedback</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-4">
@@ -342,6 +344,10 @@ const Settings = () => {
 
           <TabsContent value="fiscal" className="space-y-4">
             <FiscalSettingsManager />
+          </TabsContent>
+
+          <TabsContent value="feedback" className="space-y-4">
+            <SystemFeedbackForm />
           </TabsContent>
         </Tabs>
       </div>

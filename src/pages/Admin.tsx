@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Store, ShoppingBag, TrendingUp, Trash2, ExternalLink } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Users, Store, ShoppingBag, TrendingUp, Trash2, ExternalLink, MessageSquare, Star } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -29,10 +30,21 @@ interface Restaurant {
   totalRevenue: number;
 }
 
+interface SystemFeedback {
+  id: string;
+  restaurant_id: string;
+  restaurant_name?: string;
+  category: string;
+  rating: number;
+  message: string;
+  created_at: string;
+}
+
 const Admin = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [stats, setStats] = useState({ totalLeads: 0, totalRestaurants: 0, totalOrders: 0, totalRevenue: 0 });
+  const [feedbacks, setFeedbacks] = useState<SystemFeedback[]>([]);
+  const [stats, setStats] = useState({ totalLeads: 0, totalRestaurants: 0, totalOrders: 0, totalRevenue: 0, totalFeedbacks: 0 });
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -76,6 +88,12 @@ const Admin = () => {
         .from("orders")
         .select("restaurant_id, total_amount");
 
+      // Load system feedbacks
+      const { data: feedbacksData } = await supabase
+        .from("system_feedback")
+        .select("*")
+        .order("created_at", { ascending: false });
+
       // Group orders by restaurant
       const revenueByRestaurant: Record<string, { orders: number; revenue: number }> = {};
       (ordersData || []).forEach((o) => {
@@ -92,13 +110,26 @@ const Admin = () => {
         totalRevenue: revenueByRestaurant[p.id]?.revenue || 0,
       }));
 
+      // Map feedbacks with restaurant names
+      const profileMap: Record<string, string> = {};
+      (profilesData || []).forEach((p) => {
+        profileMap[p.id] = p.restaurant_name;
+      });
+
+      const feedbacksWithNames: SystemFeedback[] = (feedbacksData || []).map((fb) => ({
+        ...fb,
+        restaurant_name: profileMap[fb.restaurant_id] || "Desconhecido",
+      }));
+
       setLeads(leadsData || []);
       setRestaurants(restaurantsWithRevenue);
+      setFeedbacks(feedbacksWithNames);
       setStats({
         totalLeads: leadsData?.length || 0,
         totalRestaurants: profilesData?.length || 0,
         totalOrders: ordersData?.length || 0,
         totalRevenue: ordersData?.reduce((sum, o) => sum + Number(o.total_amount), 0) || 0,
+        totalFeedbacks: feedbacksData?.length || 0,
       });
     } catch (error) {
       console.error(error);
@@ -125,6 +156,31 @@ const Admin = () => {
       toast.success("Lead excluído!");
       setLeads(leads.filter(l => l.id !== id));
     }
+  };
+
+  const deleteFeedback = async (id: string) => {
+    const { error } = await supabase.from("system_feedback").delete().eq("id", id);
+    if (error) {
+      toast.error("Erro ao excluir feedback");
+    } else {
+      toast.success("Feedback excluído!");
+      setFeedbacks(feedbacks.filter(f => f.id !== id));
+    }
+  };
+
+  const getCategoryLabel = (category: string) => {
+    const labels: Record<string, string> = {
+      geral: "Geral",
+      pedidos: "Pedidos",
+      produtos: "Produtos",
+      clientes: "Clientes",
+      analytics: "Analytics",
+      entrega: "Entrega",
+      pagamentos: "Pagamentos",
+      sugestao: "Sugestão",
+      bug: "Bug",
+    };
+    return labels[category] || category;
   };
 
   if (!isAdmin && !loading) {
@@ -207,6 +263,7 @@ const Admin = () => {
           <TabsList>
             <TabsTrigger value="leads">Leads ({leads.length})</TabsTrigger>
             <TabsTrigger value="restaurants">Restaurantes ({restaurants.length})</TabsTrigger>
+            <TabsTrigger value="feedbacks">Opiniões ({feedbacks.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="leads" className="mt-4">
@@ -315,6 +372,77 @@ const Admin = () => {
                               >
                                 <ExternalLink className="h-3.5 w-3.5" />
                                 Ver cardápio
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="feedbacks" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  Opiniões dos Restaurantes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {feedbacks.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">Nenhuma opinião registrada ainda.</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Data</TableHead>
+                          <TableHead>Restaurante</TableHead>
+                          <TableHead>Categoria</TableHead>
+                          <TableHead>Avaliação</TableHead>
+                          <TableHead className="max-w-[300px]">Mensagem</TableHead>
+                          <TableHead>Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {feedbacks.map((fb) => (
+                          <TableRow key={fb.id}>
+                            <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                              {format(new Date(fb.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
+                            </TableCell>
+                            <TableCell className="font-medium">{fb.restaurant_name}</TableCell>
+                            <TableCell>
+                              <Badge variant="secondary">{getCategoryLabel(fb.category)}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-0.5">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`h-3.5 w-3.5 ${
+                                      star <= fb.rating
+                                        ? "text-yellow-500 fill-yellow-500"
+                                        : "text-muted-foreground"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-[300px]">
+                              <p className="text-sm truncate" title={fb.message}>{fb.message}</p>
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => deleteFeedback(fb.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </TableCell>
                           </TableRow>
