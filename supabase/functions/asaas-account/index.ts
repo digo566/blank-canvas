@@ -55,6 +55,28 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const body = await req.json();
+    const { action, ...params } = body;
+
+    // Temporary debug action - no auth needed
+    if (action === "debug-search") {
+      const { cpfCnpj, email } = params;
+      const cleanCpf = (cpfCnpj || "").replace(/\D/g, "");
+      const results: Record<string, unknown> = {};
+      
+      if (cleanCpf) {
+        results.accountsByCpf = await asaas(`/accounts?cpfCnpj=${cleanCpf}`);
+        results.customersByCpf = await asaas(`/customers?cpfCnpj=${cleanCpf}`);
+      }
+      if (email) {
+        const enc = encodeURIComponent(email);
+        results.accountsByEmail = await asaas(`/accounts?email=${enc}`);
+        results.customersByEmail = await asaas(`/customers?email=${enc}`);
+      }
+      
+      return json(results);
+    }
+
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return json({ error: "Unauthorized" }, 401);
@@ -77,8 +99,6 @@ Deno.serve(async (req) => {
     if (!roles || roles.length === 0) {
       return json({ error: "Apenas administradores podem acessar esta função" }, 403);
     }
-
-    const { action, ...params } = await req.json();
 
     // ─── GET ACCOUNT STATUS ─────────────────────────────────
     if (action === "get-status") {
