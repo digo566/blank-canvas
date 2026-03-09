@@ -12,7 +12,7 @@ import { DeliveryZonesManager } from "@/components/settings/DeliveryZonesManager
 import { CouponsManager } from "@/components/settings/CouponsManager";
 import { FiscalSettingsManager } from "@/components/settings/FiscalSettingsManager";
 import { LoyaltyManager } from "@/components/settings/LoyaltyManager";
-import { SystemFeedbackForm } from "@/components/settings/SystemFeedbackForm";
+
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -94,7 +94,7 @@ const Settings = () => {
           max_delivery_time: data.max_delivery_time || 60,
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error("Erro ao carregar perfil");
     } finally {
       setLoading(false);
@@ -123,7 +123,7 @@ const Settings = () => {
       if (error) throw error;
       toast.success("Configurações salvas!");
     } catch (error: any) {
-      toast.error("Erro ao salvar: " + error.message);
+      toast.error("Erro ao salvar configurações. Tente novamente.");
     } finally {
       setSaving(false);
     }
@@ -169,7 +169,6 @@ const Settings = () => {
             <TabsTrigger value="coupons">Cupons</TabsTrigger>
             <TabsTrigger value="loyalty">Fidelidade</TabsTrigger>
             <TabsTrigger value="fiscal">Fiscal</TabsTrigger>
-            <TabsTrigger value="feedback">Feedback</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-4">
@@ -346,9 +345,6 @@ const Settings = () => {
             <FiscalSettingsManager />
           </TabsContent>
 
-          <TabsContent value="feedback" className="space-y-4">
-            <SystemFeedbackForm />
-          </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>
