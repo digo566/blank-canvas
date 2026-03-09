@@ -292,6 +292,7 @@ REGRAS IMPORTANTES:
 IMPORTANTE: 
 - O bloco json_order deve ser incluído APENAS quando o cliente CONFIRMAR o pedido. NÃO inclua antes da confirmação.
 - O campo "customer_phone" DEVE conter APENAS números (sem +55, sem traços, sem parênteses). Exemplo: "85999998888" (DDD + número).
+- O campo "customer_cpf" deve conter APENAS números (11 dígitos) se o cliente quiser CPF na nota, ou null se não quiser. Sempre pergunte ao cliente.
 - O campo "customer_address" DEVE ser o endereço completo e organizado: "Rua, Número, Bairro, Complemento - Cidade". Se for retirada, coloque "Retirada no local".
 - O campo "delivery_type" deve ser "delivery" ou "pickup".
 - O campo "delivery_fee" deve ser a taxa de entrega (0 se for retirada ou bairro não cadastrado).
