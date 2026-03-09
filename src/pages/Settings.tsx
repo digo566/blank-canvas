@@ -12,6 +12,7 @@ import { DeliveryZonesManager } from "@/components/settings/DeliveryZonesManager
 import { CouponsManager } from "@/components/settings/CouponsManager";
 import { FiscalSettingsManager } from "@/components/settings/FiscalSettingsManager";
 import { LoyaltyManager } from "@/components/settings/LoyaltyManager";
+import { SystemFeedbackForm } from "@/components/settings/SystemFeedbackForm";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
