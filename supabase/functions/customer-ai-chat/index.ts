@@ -418,6 +418,7 @@ IMPORTANTE:
           const sanitizedPhone = String(orderData.customer_phone || "").replace(/\D/g, "");
           const sanitizedName = String(orderData.customer_name || "").trim();
           const sanitizedAddress = String(orderData.customer_address || "").trim();
+          const sanitizedCpf = orderData.customer_cpf ? String(orderData.customer_cpf).replace(/\D/g, "") : null;
 
           console.log("Order confirmed. Name:", sanitizedName, "Phone:", sanitizedPhone, "Address:", sanitizedAddress);
 
