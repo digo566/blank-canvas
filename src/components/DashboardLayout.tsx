@@ -1,4 +1,5 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useMemo } from "react";
+import { Navigate } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
