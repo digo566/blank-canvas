@@ -158,6 +158,31 @@ const Admin = () => {
     }
   };
 
+  const deleteFeedback = async (id: string) => {
+    const { error } = await supabase.from("system_feedback").delete().eq("id", id);
+    if (error) {
+      toast.error("Erro ao excluir feedback");
+    } else {
+      toast.success("Feedback excluído!");
+      setFeedbacks(feedbacks.filter(f => f.id !== id));
+    }
+  };
+
+  const getCategoryLabel = (category: string) => {
+    const labels: Record<string, string> = {
+      geral: "Geral",
+      pedidos: "Pedidos",
+      produtos: "Produtos",
+      clientes: "Clientes",
+      analytics: "Analytics",
+      entrega: "Entrega",
+      pagamentos: "Pagamentos",
+      sugestao: "Sugestão",
+      bug: "Bug",
+    };
+    return labels[category] || category;
+  };
+
   if (!isAdmin && !loading) {
     return (
       <DashboardLayout>
