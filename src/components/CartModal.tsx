@@ -34,6 +34,7 @@ interface CartModalProps {
   guestCartId: string | null;
   onRemoveItem?: (itemId: string, selectedOptions?: CartItem['selectedOptions']) => void;
   onUpdateQuantity?: (itemId: string, quantity: number, selectedOptions?: CartItem['selectedOptions']) => void;
+  tableNumber?: string | null;
 }
 
 const checkoutSchema = z.object({
@@ -44,7 +45,7 @@ const checkoutSchema = z.object({
   address: z.string().min(5, "Endereço deve ter pelo menos 5 caracteres"),
 });
 
-export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, restaurantId, guestCartId, onRemoveItem, onUpdateQuantity }: CartModalProps) {
+export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, restaurantId, guestCartId, onRemoveItem, onUpdateQuantity, tableNumber }: CartModalProps) {
   const navigate = useNavigate();
   const [step, setStep] = useState<'cart' | 'data' | 'payment' | 'success'>('cart');
   const [loading, setLoading] = useState(false);
@@ -173,6 +174,7 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
           notes: finalNotes || null,
           totalAmount: total,
           scheduledFor,
+          tableNumber: tableNumber || null,
         },
       });
 

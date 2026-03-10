@@ -27,6 +27,8 @@ interface Order {
   needs_change: boolean | null;
   change_amount: number | null;
   notes: string | null;
+  table_number: string | null;
+  order_type: string;
   clients: {
     name: string;
     phone: string;
@@ -236,6 +238,11 @@ const Orders = () => {
                       <h3 className="text-sm font-semibold truncate flex-1">
                         {order.clients?.name || "Sem nome"}
                       </h3>
+                      {order.table_number && (
+                        <Badge variant="secondary" className="text-xs shrink-0">
+                          Mesa {order.table_number}
+                        </Badge>
+                      )}
                     </div>
 
                     <Badge
@@ -277,6 +284,9 @@ const Orders = () => {
                   <Badge className={statusColors[selectedOrder.status]}>
                     {statusLabels[selectedOrder.status]}
                   </Badge>
+                  {selectedOrder.table_number && (
+                    <Badge variant="secondary">Mesa {selectedOrder.table_number}</Badge>
+                  )}
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground">
                   {format(new Date(selectedOrder.created_at), "PPpp", { locale: ptBR })}

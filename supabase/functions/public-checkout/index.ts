@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { step, restaurantId, name, phone, address, cpf, items, cartId, paymentMethod, needsChange, changeAmount, notes, totalAmount, scheduledFor } = await req.json();
+    const { step, restaurantId, name, phone, address, cpf, items, cartId, paymentMethod, needsChange, changeAmount, notes, totalAmount, scheduledFor, tableNumber } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -128,13 +128,10 @@ serve(async (req) => {
 
       // Build notes
       const noteParts: string[] = [];
+      if (tableNumber) noteParts.push(`🪑 Mesa: ${tableNumber}`);
       if (notes) noteParts.push(`📝 Obs: ${notes}`);
       
-      // Get CPF from request (it should be passed from the frontend)
-      // For now, we'll check if it's in the notes or we can add a separate field
-      // Since we don't have it stored in cart, we need to pass it from frontend
-      
-      noteParts.push("🛍️ Pedido via Loja Online");
+      noteParts.push(tableNumber ? "🪑 Pedido via QR Code Mesa" : "🛍️ Pedido via Loja Online");
 
       // Create order
       const { data: order, error: orderError } = await supabase
@@ -150,7 +147,8 @@ serve(async (req) => {
           change_amount: needsChange && changeAmount ? changeAmount : null,
           notes: noteParts.join("\n"),
           status: "pending",
-          order_type: "delivery",
+          order_type: tableNumber ? "dine_in" : "delivery",
+          table_number: tableNumber || null,
           scheduled_for: scheduledFor || null,
         })
         .select("id, tracking_code")
