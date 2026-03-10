@@ -436,8 +436,12 @@ Confirmou? Adicione JSON:
           noteParts.push(`📞 Tel: ${sanitizedPhone || "(não informado)"}`);
 
           const deliveryType = String(orderData.delivery_type || "delivery");
+          const tableNumber = orderData.table_number ? String(orderData.table_number) : null;
           if (deliveryType === "pickup") {
             noteParts.push("🏪 Retirada no local");
+          } else if (deliveryType === "dine_in") {
+            noteParts.push(`🪑 Mesa: ${tableNumber || "(não informado)"}`);
+            noteParts.push("🪑 Pedido para consumo no local");
           } else {
             noteParts.push(`📍 Endereço: ${sanitizedAddress || "(não informado)"}`);
             if (orderData.delivery_neighborhood) {
