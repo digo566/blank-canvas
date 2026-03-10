@@ -119,6 +119,7 @@ const POS = () => {
       toast.success(`Pedido #${order.tracking_code} criado com sucesso!`);
       setCart([]);
       setTableNumber("");
+      setCustomerName("");
     } catch (error: any) {
       toast.error("Erro ao criar pedido: " + error.message);
     } finally {
