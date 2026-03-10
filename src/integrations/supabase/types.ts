@@ -852,11 +852,14 @@ export type Database = {
           id: string
           needs_change: boolean | null
           notes: string | null
+          order_type: string
           payment_method: string | null
           preparation_started_at: string | null
           ready_at: string | null
           restaurant_id: string
+          scheduled_for: string | null
           status: Database["public"]["Enums"]["order_status"] | null
+          table_number: string | null
           total_amount: number
           tracking_code: string | null
           updated_at: string | null
@@ -873,11 +876,14 @@ export type Database = {
           id?: string
           needs_change?: boolean | null
           notes?: string | null
+          order_type?: string
           payment_method?: string | null
           preparation_started_at?: string | null
           ready_at?: string | null
           restaurant_id: string
+          scheduled_for?: string | null
           status?: Database["public"]["Enums"]["order_status"] | null
+          table_number?: string | null
           total_amount: number
           tracking_code?: string | null
           updated_at?: string | null
@@ -894,11 +900,14 @@ export type Database = {
           id?: string
           needs_change?: boolean | null
           notes?: string | null
+          order_type?: string
           payment_method?: string | null
           preparation_started_at?: string | null
           ready_at?: string | null
           restaurant_id?: string
+          scheduled_for?: string | null
           status?: Database["public"]["Enums"]["order_status"] | null
+          table_number?: string | null
           total_amount?: number
           tracking_code?: string | null
           updated_at?: string | null
@@ -1207,6 +1216,33 @@ export type Database = {
           restaurant_name?: string
           show_phone_publicly?: boolean | null
           trial_ends_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      restaurant_tables: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean
+          restaurant_id: string
+          table_number: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean
+          restaurant_id: string
+          table_number: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean
+          restaurant_id?: string
+          table_number?: string
           updated_at?: string | null
         }
         Relationships: []
