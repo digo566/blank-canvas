@@ -60,6 +60,9 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
     needsChange: false,
     changeAmount: "",
     notes: "",
+    wantsScheduling: false,
+    scheduledDate: "",
+    scheduledTime: "",
   });
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
