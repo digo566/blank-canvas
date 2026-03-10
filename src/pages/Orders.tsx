@@ -386,29 +386,70 @@ const Orders = () => {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-3 border-t">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Total</p>
-                    <p className="text-xl font-bold">
-                      R$ {Number(selectedOrder.total_amount).toFixed(2)}
-                    </p>
+                <div className="pt-3 border-t space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Total</p>
+                      <p className="text-xl font-bold">
+                        R$ {Number(selectedOrder.total_amount).toFixed(2)}
+                      </p>
+                    </div>
+                    <Select
+                      value={selectedOrder.status}
+                      onValueChange={(value) => updateOrderStatus(selectedOrder.id, value)}
+                    >
+                      <SelectTrigger className="w-[140px] h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pendente</SelectItem>
+                        <SelectItem value="preparing">Em Preparo</SelectItem>
+                        <SelectItem value="on_the_way">A Caminho</SelectItem>
+                        <SelectItem value="ready">Pronto</SelectItem>
+                        <SelectItem value="delivered">Entregue</SelectItem>
+                        <SelectItem value="cancelled">Cancelado</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <Select
-                    value={selectedOrder.status}
-                    onValueChange={(value) => updateOrderStatus(selectedOrder.id, value)}
-                  >
-                    <SelectTrigger className="w-[140px] h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pendente</SelectItem>
-                      <SelectItem value="preparing">Em Preparo</SelectItem>
-                      <SelectItem value="on_the_way">A Caminho</SelectItem>
-                      <SelectItem value="ready">Pronto</SelectItem>
-                      <SelectItem value="delivered">Entregue</SelectItem>
-                      <SelectItem value="cancelled">Cancelado</SelectItem>
-                    </SelectContent>
-                  </Select>
+
+                  {/* Quick Action Buttons */}
+                  <div className="flex flex-wrap gap-2">
+                    {selectedOrder.status === "pending" && (
+                      <Button className="flex-1 h-10" onClick={() => updateOrderStatus(selectedOrder.id, "preparing")}>
+                        🔥 Iniciar Preparo
+                      </Button>
+                    )}
+                    {selectedOrder.status === "preparing" && (
+                      <>
+                        <Button className="flex-1 h-10" onClick={() => updateOrderStatus(selectedOrder.id, "ready")}>
+                          ✅ Pronto
+                        </Button>
+                        <Button variant="outline" className="flex-1 h-10" onClick={() => updateOrderStatus(selectedOrder.id, "on_the_way")}>
+                          🛵 Saiu p/ Entrega
+                        </Button>
+                      </>
+                    )}
+                    {selectedOrder.status === "ready" && (
+                      <>
+                        <Button className="flex-1 h-10" onClick={() => updateOrderStatus(selectedOrder.id, "delivered")}>
+                          📦 Marcar Entregue
+                        </Button>
+                        <Button variant="outline" className="flex-1 h-10" onClick={() => updateOrderStatus(selectedOrder.id, "on_the_way")}>
+                          🛵 Saiu p/ Entrega
+                        </Button>
+                      </>
+                    )}
+                    {selectedOrder.status === "on_the_way" && (
+                      <Button className="flex-1 h-10" onClick={() => updateOrderStatus(selectedOrder.id, "delivered")}>
+                        📦 Marcar Entregue
+                      </Button>
+                    )}
+                    {selectedOrder.status !== "cancelled" && selectedOrder.status !== "delivered" && (
+                      <Button variant="destructive" size="sm" className="h-10" onClick={() => updateOrderStatus(selectedOrder.id, "cancelled")}>
+                        Cancelar
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Loyalty Badge */}
