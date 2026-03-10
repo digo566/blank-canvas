@@ -97,7 +97,7 @@ const POS = () => {
           status: "preparing",
           order_type: tableNumber ? "dine_in" : "counter",
           table_number: tableNumber || null,
-          notes: "🏪 Pedido via PDV (Balcão)",
+          notes: `🏪 Pedido via PDV (Balcão)${customerName ? `\n👤 Cliente: ${customerName}` : ""}`,
         })
         .select("id, tracking_code")
         .single();
