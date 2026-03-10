@@ -45,7 +45,7 @@ const checkoutSchema = z.object({
   address: z.string().min(5, "Endereço deve ter pelo menos 5 caracteres"),
 });
 
-export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, restaurantId, guestCartId, onRemoveItem, onUpdateQuantity }: CartModalProps) {
+export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, restaurantId, guestCartId, onRemoveItem, onUpdateQuantity, tableNumber }: CartModalProps) {
   const navigate = useNavigate();
   const [step, setStep] = useState<'cart' | 'data' | 'payment' | 'success'>('cart');
   const [loading, setLoading] = useState(false);
