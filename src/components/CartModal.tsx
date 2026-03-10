@@ -174,6 +174,7 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
           notes: finalNotes || null,
           totalAmount: total,
           scheduledFor,
+          tableNumber: tableNumber || null,
         },
       });
 

@@ -539,6 +539,7 @@ const PublicStore = () => {
         guestCartId={guestCartId}
         onRemoveItem={handleRemoveItem}
         onUpdateQuantity={handleUpdateQuantity}
+        tableNumber={tableNumber}
       />
 
       {selectedProduct && (
