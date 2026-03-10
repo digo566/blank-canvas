@@ -269,27 +269,70 @@ const Index = () => {
 
       <section className="relative z-10 bg-gradient-to-b from-[hsl(270,65%,12%)] to-[hsl(270,65%,18%)] py-16 md:py-24">
         <div className="container">
-          <h2 className="text-2xl md:text-4xl font-extrabold mb-12 text-center leading-tight">
-            Transforme a experiência dos seus pedidos com a{" "}
-            <span className="text-yellow-400">Grape</span>
+          <h2 className="text-2xl md:text-4xl font-extrabold mb-4 text-center leading-tight">
+            Grape vs Outros sistemas
           </h2>
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-6xl mx-auto">
-            <div className="aspect-square flex items-center justify-center">
-              <img
-                src="/images/comparison-table.png"
-                alt="Comparação Com Grape vs Sem Grape"
-                className="w-full h-full object-contain"
-                loading="lazy"
-              />
-            </div>
-            <div className="aspect-square flex items-center justify-center">
-              <img
-                src="/images/devices-showcase.png"
-                alt="Grape em todos os dispositivos"
-                className="w-full h-full object-contain"
-                loading="lazy"
-              />
-            </div>
+          <p className="text-white/50 text-center mb-10 text-lg">Veja por que somos a escolha certa</p>
+
+          <div className="max-w-4xl mx-auto overflow-hidden rounded-2xl border border-white/10">
+            <table className="w-full text-sm md:text-base">
+              <thead>
+                <tr className="bg-white/10">
+                  <th className="text-left p-4 font-semibold text-white/70">Funcionalidade</th>
+                  <th className="p-4 font-bold text-yellow-400 text-center">Grape</th>
+                  <th className="p-4 font-semibold text-white/50 text-center">Outros</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Cardápio digital com QR Code", true, true],
+                  ["Gestão de pedidos em tempo real", true, true],
+                  ["Display de Cozinha (KDS)", true, false],
+                  ["PDV / Ponto de Venda", true, false],
+                  ["Pedido por mesa via QR Code", true, false],
+                  ["Atendente Virtual com IA", true, false],
+                  ["Analytics inteligente com IA", true, false],
+                  ["Rastreamento de pedido pelo cliente", true, false],
+                  ["CRM de clientes integrado", true, false],
+                  ["Recuperação de carrinhos abandonados", true, false],
+                  ["Gestão financeira completa", true, false],
+                  ["Controle de estoque com alertas", true, false],
+                  ["Matriz BCG de produtos", true, false],
+                  ["Programa de fidelidade", true, false],
+                  ["Cupons de desconto", true, true],
+                  ["Zonas de entrega com taxas", true, true],
+                  ["Zero taxa por pedido", true, false],
+                  ["Pré Nota Fiscal", true, false],
+                ].map(([feature, grape, other], i) => (
+                  <tr key={i} className={`border-t border-white/5 ${i % 2 === 0 ? "bg-white/[0.02]" : ""}`}>
+                    <td className="p-4 text-white/80">{feature as string}</td>
+                    <td className="p-4 text-center">
+                      {grape ? (
+                        <span className="text-green-400 font-bold text-lg">✓</span>
+                      ) : (
+                        <span className="text-red-400">✗</span>
+                      )}
+                    </td>
+                    <td className="p-4 text-center">
+                      {other ? (
+                        <span className="text-white/40">✓</span>
+                      ) : (
+                        <span className="text-red-400/60">✗</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-12 flex justify-center">
+            <img
+              src="/images/devices-showcase.png"
+              alt="Grape em todos os dispositivos"
+              className="max-w-2xl w-full object-contain"
+              loading="lazy"
+            />
           </div>
         </div>
       </section>
