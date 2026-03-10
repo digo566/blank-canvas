@@ -36,6 +36,26 @@ const Index = () => {
     } catch (error) {
       console.error("Lead save error:", error);
     }
+
+    // Send Facebook Conversions API event
+    try {
+      await supabase.functions.invoke("facebook-conversions", {
+        body: {
+          event_name: "Lead",
+          user_data: {
+            email: formData.email,
+            phone: formData.whatsapp,
+            first_name: formData.name.split(" ")[0],
+          },
+          custom_data: {
+            restaurant_name: formData.restaurantName,
+          },
+          event_source_url: window.location.href,
+        },
+      });
+    } catch (error) {
+      console.error("Facebook event error:", error);
+    }
     const params = new URLSearchParams({
       name: formData.name,
       email: formData.email,

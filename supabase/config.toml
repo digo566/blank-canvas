@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.asaas-webhook]
 verify_jwt = false
+
+[functions.facebook-conversions]
+verify_jwt = false
