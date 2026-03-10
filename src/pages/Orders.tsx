@@ -27,6 +27,8 @@ interface Order {
   needs_change: boolean | null;
   change_amount: number | null;
   notes: string | null;
+  table_number: string | null;
+  order_type: string;
   clients: {
     name: string;
     phone: string;
