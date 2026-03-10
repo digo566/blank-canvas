@@ -147,7 +147,8 @@ serve(async (req) => {
           change_amount: needsChange && changeAmount ? changeAmount : null,
           notes: noteParts.join("\n"),
           status: "pending",
-          order_type: "delivery",
+          order_type: tableNumber ? "dine_in" : "delivery",
+          table_number: tableNumber || null,
           scheduled_for: scheduledFor || null,
         })
         .select("id, tracking_code")
