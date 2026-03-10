@@ -29,7 +29,7 @@ export function sanitizeError(error: unknown): string {
   
   for (const [pattern, userMessage] of Object.entries(errorMap)) {
     if (message.toLowerCase().includes(pattern.toLowerCase())) {
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.DEV) {
         console.error("Database error:", error);
       }
       return userMessage;
