@@ -46,6 +46,8 @@ interface RestaurantInfo {
 
 const PublicStore = () => {
   const { restaurantId } = useParams();
+  const [searchParams] = useSearchParams();
+  const tableNumber = searchParams.get("mesa") || null;
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
