@@ -49,7 +49,7 @@ const AIAttendant = () => {
         // Initial greeting
         setMessages([{
           role: "assistant",
-          content: `Olá! 👋 Bem-vindo ao **${data[0].restaurant_name}**! Sou o atendente virtual e estou aqui para te ajudar a fazer seu pedido. 😊\n\nO que você gostaria de pedir hoje? Posso te mostrar nosso cardápio ou ajudar a escolher!`
+          content: `Olá! 👋 Bem-vindo ao **${data[0].restaurant_name}**! Sou o atendente virtual e estou aqui para te ajudar. 😊\n\nAntes de começar, me diz: vai ser **delivery**, **retirada** ou vai **comer no local**?`
         }]);
       }
     } catch (error) {
