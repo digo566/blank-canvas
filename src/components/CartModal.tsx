@@ -34,6 +34,7 @@ interface CartModalProps {
   guestCartId: string | null;
   onRemoveItem?: (itemId: string, selectedOptions?: CartItem['selectedOptions']) => void;
   onUpdateQuantity?: (itemId: string, quantity: number, selectedOptions?: CartItem['selectedOptions']) => void;
+  tableNumber?: string | null;
 }
 
 const checkoutSchema = z.object({
