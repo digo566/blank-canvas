@@ -94,7 +94,7 @@ const Kitchen = () => {
   const updateStatus = async (orderId: string, newStatus: string) => {
     const { error } = await supabase
       .from("orders")
-      .update({ status: newStatus })
+      .update({ status: newStatus as any })
       .eq("id", orderId);
     if (error) {
       toast.error("Erro ao atualizar status");
