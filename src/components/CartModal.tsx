@@ -60,6 +60,9 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
     needsChange: false,
     changeAmount: "",
     notes: "",
+    wantsScheduling: false,
+    scheduledDate: "",
+    scheduledTime: "",
   });
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -149,6 +152,15 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
           : `📄 CPF na nota: ${formData.cpf}`;
       }
 
+      // Build scheduled_for ISO string
+      let scheduledFor: string | null = null;
+      if (formData.wantsScheduling && formData.scheduledDate && formData.scheduledTime) {
+        scheduledFor = new Date(`${formData.scheduledDate}T${formData.scheduledTime}`).toISOString();
+        finalNotes = finalNotes
+          ? `${finalNotes}\n📅 Agendado: ${formData.scheduledDate} às ${formData.scheduledTime}`
+          : `📅 Agendado: ${formData.scheduledDate} às ${formData.scheduledTime}`;
+      }
+
       // Chamar edge function segura para finalizar
       const { data, error } = await supabase.functions.invoke("public-checkout", {
         body: {
@@ -160,6 +172,7 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
           changeAmount: formData.needsChange && formData.changeAmount ? parseFloat(formData.changeAmount) : null,
           notes: finalNotes || null,
           totalAmount: total,
+          scheduledFor,
         },
       });
 
@@ -207,6 +220,9 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
         needsChange: false,
         changeAmount: "",
         notes: "",
+        wantsScheduling: false,
+        scheduledDate: "",
+        scheduledTime: "",
       });
       setTrackingCode(null);
       onClose();
@@ -393,6 +409,46 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 rows={3}
               />
+            </div>
+
+            {/* Agendamento */}
+            <div className="space-y-3 border-t pt-3">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="wantsScheduling"
+                  checked={formData.wantsScheduling}
+                  onChange={(e) => setFormData({ ...formData, wantsScheduling: e.target.checked, scheduledDate: "", scheduledTime: "" })}
+                  className="h-4 w-4"
+                />
+                <Label htmlFor="wantsScheduling" className="cursor-pointer">📅 Agendar pedido para depois</Label>
+              </div>
+
+              {formData.wantsScheduling && (
+                <div className="flex gap-2">
+                  <div className="flex-1 space-y-1">
+                    <Label htmlFor="scheduledDate" className="text-xs">Data</Label>
+                    <Input
+                      id="scheduledDate"
+                      type="date"
+                      value={formData.scheduledDate}
+                      min={new Date().toISOString().split("T")[0]}
+                      onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
+                      required={formData.wantsScheduling}
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <Label htmlFor="scheduledTime" className="text-xs">Horário</Label>
+                    <Input
+                      id="scheduledTime"
+                      type="time"
+                      value={formData.scheduledTime}
+                      onChange={(e) => setFormData({ ...formData, scheduledTime: e.target.value })}
+                      required={formData.wantsScheduling}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="border-t pt-2">

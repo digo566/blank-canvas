@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { step, restaurantId, name, phone, address, cpf, items, cartId, paymentMethod, needsChange, changeAmount, notes, totalAmount } = await req.json();
+    const { step, restaurantId, name, phone, address, cpf, items, cartId, paymentMethod, needsChange, changeAmount, notes, totalAmount, scheduledFor } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -150,6 +150,8 @@ serve(async (req) => {
           change_amount: needsChange && changeAmount ? changeAmount : null,
           notes: noteParts.join("\n"),
           status: "pending",
+          order_type: "delivery",
+          scheduled_for: scheduledFor || null,
         })
         .select("id, tracking_code")
         .single();

@@ -29,6 +29,9 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const Feedback = lazy(() => import("./pages/Feedback"));
+const Kitchen = lazy(() => import("./pages/Kitchen"));
+const TableQRCodes = lazy(() => import("./pages/TableQRCodes"));
+const POS = lazy(() => import("./pages/POS"));
 
 const queryClient = new QueryClient();
 
@@ -70,6 +73,9 @@ const App = () => (
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/subscription" element={<Subscription />} />
                 <Route path="/feedback" element={<Feedback />} />
+                <Route path="/kitchen" element={<Kitchen />} />
+                <Route path="/tables" element={<TableQRCodes />} />
+                <Route path="/pos" element={<POS />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
