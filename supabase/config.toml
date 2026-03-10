@@ -4,7 +4,7 @@ project_id = "quofxsvpgpbsjqldrcyd"
 verify_jwt = false
 
 [functions.financial-ai-chat]
-verify_jwt = true
+verify_jwt = false
 
 [functions.analytics-ai-chat]
 verify_jwt = false
