@@ -194,10 +194,14 @@ const POS = () => {
 
       {/* Cart Panel */}
       <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l bg-card flex flex-col">
-        <div className="p-4 border-b">
+        <div className="p-4 border-b space-y-2">
           <h2 className="font-bold text-lg">Carrinho</h2>
           <Input
-            className="mt-2"
+            placeholder="Nome do cliente (opcional)"
+            value={customerName}
+            onChange={e => setCustomerName(e.target.value)}
+          />
+          <Input
             placeholder="Mesa (opcional)"
             value={tableNumber}
             onChange={e => setTableNumber(e.target.value)}
