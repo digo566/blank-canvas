@@ -51,8 +51,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { to: "/finance", icon: Wallet, label: "Financeiro" },
     { to: "/products", icon: Package, label: "Produtos" },
     { to: "/orders", icon: ShoppingBag, label: "Pedidos" },
+    { to: "/kitchen", icon: ChefHat, label: "Cozinha (KDS)" },
+    { to: "/pos", icon: Store, label: "PDV" },
     { to: "/customers", icon: Users, label: "Clientes" },
     { to: "/abandoned-carts", icon: ShoppingCart, label: "Carrinhos" },
+    { to: "/tables", icon: QrCode, label: "QR Mesas" },
     { to: "/settings", icon: Settings, label: "Configurações" },
     { to: "/feedback", icon: MessageSquarePlus, label: "Opiniões" },
     ...(isAdmin ? [
