@@ -238,6 +238,11 @@ const Orders = () => {
                       <h3 className="text-sm font-semibold truncate flex-1">
                         {order.clients?.name || "Sem nome"}
                       </h3>
+                      {order.table_number && (
+                        <Badge variant="secondary" className="text-xs shrink-0">
+                          Mesa {order.table_number}
+                        </Badge>
+                      )}
                     </div>
 
                     <Badge
