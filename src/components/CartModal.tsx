@@ -210,6 +210,9 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
         needsChange: false,
         changeAmount: "",
         notes: "",
+        wantsScheduling: false,
+        scheduledDate: "",
+        scheduledTime: "",
       });
       setTrackingCode(null);
       onClose();
