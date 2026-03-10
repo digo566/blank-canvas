@@ -482,6 +482,8 @@ Confirmou? Adicione JSON:
                 tracking_code: trackingCodeFromRpc || null,
                 total_amount: totalAmount,
                 delivery_fee: deliveryFee,
+                order_type: deliveryType === "dine_in" ? "dine_in" : deliveryType === "pickup" ? "pickup" : "delivery",
+                table_number: deliveryType === "dine_in" ? tableNumber : null,
                 coupon_id: couponId,
                 coupon_discount: couponDiscount,
                 payment_method: paymentMethod,
