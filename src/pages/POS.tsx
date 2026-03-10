@@ -39,6 +39,7 @@ const POS = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [tableNumber, setTableNumber] = useState("");
+  const [customerName, setCustomerName] = useState("");
 
   useEffect(() => {
     if (user) loadData();
@@ -96,7 +97,7 @@ const POS = () => {
           status: "preparing",
           order_type: tableNumber ? "dine_in" : "counter",
           table_number: tableNumber || null,
-          notes: "🏪 Pedido via PDV (Balcão)",
+          notes: `🏪 Pedido via PDV (Balcão)${customerName ? `\n👤 Cliente: ${customerName}` : ""}`,
         })
         .select("id, tracking_code")
         .single();
@@ -118,6 +119,7 @@ const POS = () => {
       toast.success(`Pedido #${order.tracking_code} criado com sucesso!`);
       setCart([]);
       setTableNumber("");
+      setCustomerName("");
     } catch (error: any) {
       toast.error("Erro ao criar pedido: " + error.message);
     } finally {
@@ -192,10 +194,14 @@ const POS = () => {
 
       {/* Cart Panel */}
       <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l bg-card flex flex-col">
-        <div className="p-4 border-b">
+        <div className="p-4 border-b space-y-2">
           <h2 className="font-bold text-lg">Carrinho</h2>
           <Input
-            className="mt-2"
+            placeholder="Nome do cliente (opcional)"
+            value={customerName}
+            onChange={e => setCustomerName(e.target.value)}
+          />
+          <Input
             placeholder="Mesa (opcional)"
             value={tableNumber}
             onChange={e => setTableNumber(e.target.value)}
