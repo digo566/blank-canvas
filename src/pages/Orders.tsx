@@ -284,6 +284,9 @@ const Orders = () => {
                   <Badge className={statusColors[selectedOrder.status]}>
                     {statusLabels[selectedOrder.status]}
                   </Badge>
+                  {selectedOrder.table_number && (
+                    <Badge variant="secondary">Mesa {selectedOrder.table_number}</Badge>
+                  )}
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground">
                   {format(new Date(selectedOrder.created_at), "PPpp", { locale: ptBR })}
