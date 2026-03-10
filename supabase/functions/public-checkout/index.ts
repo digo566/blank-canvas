@@ -128,13 +128,10 @@ serve(async (req) => {
 
       // Build notes
       const noteParts: string[] = [];
+      if (tableNumber) noteParts.push(`🪑 Mesa: ${tableNumber}`);
       if (notes) noteParts.push(`📝 Obs: ${notes}`);
       
-      // Get CPF from request (it should be passed from the frontend)
-      // For now, we'll check if it's in the notes or we can add a separate field
-      // Since we don't have it stored in cart, we need to pass it from frontend
-      
-      noteParts.push("🛍️ Pedido via Loja Online");
+      noteParts.push(tableNumber ? "🪑 Pedido via QR Code Mesa" : "🛍️ Pedido via Loja Online");
 
       // Create order
       const { data: order, error: orderError } = await supabase
