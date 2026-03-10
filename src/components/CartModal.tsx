@@ -152,6 +152,15 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
           : `📄 CPF na nota: ${formData.cpf}`;
       }
 
+      // Build scheduled_for ISO string
+      let scheduledFor: string | null = null;
+      if (formData.wantsScheduling && formData.scheduledDate && formData.scheduledTime) {
+        scheduledFor = new Date(`${formData.scheduledDate}T${formData.scheduledTime}`).toISOString();
+        finalNotes = finalNotes
+          ? `${finalNotes}\n📅 Agendado: ${formData.scheduledDate} às ${formData.scheduledTime}`
+          : `📅 Agendado: ${formData.scheduledDate} às ${formData.scheduledTime}`;
+      }
+
       // Chamar edge function segura para finalizar
       const { data, error } = await supabase.functions.invoke("public-checkout", {
         body: {
@@ -163,6 +172,7 @@ export function CartModal({ isOpen, onClose, onContinue, onCheckout, items, rest
           changeAmount: formData.needsChange && formData.changeAmount ? parseFloat(formData.changeAmount) : null,
           notes: finalNotes || null,
           totalAmount: total,
+          scheduledFor,
         },
       });
 
