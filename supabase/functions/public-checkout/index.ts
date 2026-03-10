@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { step, restaurantId, name, phone, address, cpf, items, cartId, paymentMethod, needsChange, changeAmount, notes, totalAmount, scheduledFor } = await req.json();
+    const { step, restaurantId, name, phone, address, cpf, items, cartId, paymentMethod, needsChange, changeAmount, notes, totalAmount, scheduledFor, tableNumber } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
