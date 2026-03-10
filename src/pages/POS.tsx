@@ -39,6 +39,7 @@ const POS = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [tableNumber, setTableNumber] = useState("");
+  const [customerName, setCustomerName] = useState("");
 
   useEffect(() => {
     if (user) loadData();
