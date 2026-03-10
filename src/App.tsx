@@ -29,6 +29,9 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const Feedback = lazy(() => import("./pages/Feedback"));
+const Kitchen = lazy(() => import("./pages/Kitchen"));
+const TableQRCodes = lazy(() => import("./pages/TableQRCodes"));
+const POS = lazy(() => import("./pages/POS"));
 
 const queryClient = new QueryClient();
 
