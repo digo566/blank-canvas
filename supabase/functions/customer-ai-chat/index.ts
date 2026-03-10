@@ -165,10 +165,6 @@ serve(async (req) => {
       loyaltyText = `\nPROGRAMA DE FIDELIDADE ATIVO:\n- A cada R$ ${Number(loyaltyConfig.spend_threshold).toFixed(2)} em compras acumuladas, o cliente ganha ${rewardStr}.\n- ${loyaltyConfig.reward_description || ""}\n- Quando o cliente informar o telefone, você pode consultar o progresso de fidelidade dele.\n`;
     }
 
-    const deliveryModeText = deliveryMode === "delivery_only"
-      ? "MODO: Apenas DELIVERY (entrega no endereço do cliente)"
-      : "MODO: DELIVERY (entrega) ou RETIRADA NO LOCAL (o cliente escolhe)";
-
     const systemPrompt = `Atendente do ${profile?.restaurant_name || 'Restaurante'}. Seja BREVE, DIRETO e OBJETIVO.
 
 CARDÁPIO:
@@ -182,29 +178,35 @@ ${coupons.length > 0 ? `CUPONS: ${coupons.map((c: any) => `${c.code} (${c.discou
 REGRAS:
 1. Só cardápio acima. Nunca invente.
 2. Pergunte UMA coisa por vez.
-3. ${deliveryMode === "delivery_and_pickup" ? "Pergunte: Delivery ou Retirada?" : "Todos delivery."}
+3. PERGUNTE LOGO NO INÍCIO: "Vai ser delivery, retirada ou vai comer no local?"
+   - Se DELIVERY: colete endereço completo (rua, nº, bairro, complemento)
+   - Se RETIRADA: não precisa de endereço
+   - Se MESA/COMER NO LOCAL: pergunte o número da mesa
 4. Colete OBRIGATÓRIOS:
    - Nome
    - Telefone (11 dígitos com DDD)
-   - ${deliveryMode === "delivery_and_pickup" ? "Tipo (delivery/retirada)\n   - " : ""}Endereço${deliveryMode === "delivery_and_pickup" ? " (se delivery)" : ""}: rua, nº, bairro, complemento
+   - Tipo (delivery/retirada/mesa)
+   - Endereço (se delivery) OU número da mesa (se mesa)
    - Itens + quantidades
    - CPF na nota? (11 dígitos ou não)
    - Pagamento: pix/dinheiro/cartão
    - Se dinheiro: troco?
-${deliveryZones.length > 0 ? '5. Mostre bairros. Bairro não listado? Anote "BAIRRO NÃO CADASTRADO: [nome]" e delivery_fee=0' : ''}
+${deliveryZones.length > 0 ? '5. Se delivery, mostre bairros. Bairro não listado? Anote "BAIRRO NÃO CADASTRADO: [nome]" e delivery_fee=0' : ''}
 ${coupons.length > 0 ? '6. Cupom: valide código e valor mínimo.' : ''}
 
 RESUMO antes de confirmar:
-Nome, Tel, ${deliveryMode === "delivery_and_pickup" ? "Tipo, " : ""}End, Itens, ${deliveryZones.length > 0 ? "Taxa, " : ""}CPF, Pag${coupons.length > 0 ? ', Cupom' : ''}.
+Nome, Tel, Tipo, ${deliveryZones.length > 0 ? "Taxa (se delivery), " : ""}End/Mesa, Itens, CPF, Pag${coupons.length > 0 ? ', Cupom' : ''}.
 
 Confirmou? Adicione JSON:
 \`\`\`json_order
-{"order_confirmed":true,"customer_name":"","customer_phone":"85999998888","customer_cpf":null,"customer_address":"","delivery_type":"delivery","delivery_fee":0,"delivery_neighborhood":"","coupon_code":null,"coupon_id":null,"coupon_discount":0,"payment_method":"pix","needs_change":false,"change_amount":0,"notes":"","items":[{"product_id":"","product_name":"","quantity":1,"unit_price":0,"options":[]}],"total_amount":0}
+{"order_confirmed":true,"customer_name":"","customer_phone":"85999998888","customer_cpf":null,"customer_address":"","delivery_type":"delivery","table_number":null,"delivery_fee":0,"delivery_neighborhood":"","coupon_code":null,"coupon_id":null,"coupon_discount":0,"payment_method":"pix","needs_change":false,"change_amount":0,"notes":"","items":[{"product_id":"","product_name":"","quantity":1,"unit_price":0,"options":[]}],"total_amount":0}
 \`\`\`
 
+- delivery_type: "delivery", "pickup" ou "dine_in"
+- table_number: número da mesa (apenas se dine_in), ex: "9"
 - phone: só números
 - cpf: 11 dígitos ou null
-- address: completo${deliveryMode === "delivery_and_pickup" ? ' (ou "Retirada no local")' : ''}
+- address: completo (se delivery), "Retirada no local" (se pickup), "Mesa X" (se dine_in)
 - total_amount: itens + delivery_fee - coupon_discount`;
 
     // Build Gemini messages
@@ -434,8 +436,12 @@ Confirmou? Adicione JSON:
           noteParts.push(`📞 Tel: ${sanitizedPhone || "(não informado)"}`);
 
           const deliveryType = String(orderData.delivery_type || "delivery");
+          const tableNumber = orderData.table_number ? String(orderData.table_number) : null;
           if (deliveryType === "pickup") {
             noteParts.push("🏪 Retirada no local");
+          } else if (deliveryType === "dine_in") {
+            noteParts.push(`🪑 Mesa: ${tableNumber || "(não informado)"}`);
+            noteParts.push("🪑 Pedido para consumo no local");
           } else {
             noteParts.push(`📍 Endereço: ${sanitizedAddress || "(não informado)"}`);
             if (orderData.delivery_neighborhood) {
@@ -476,6 +482,8 @@ Confirmou? Adicione JSON:
                 tracking_code: trackingCodeFromRpc || null,
                 total_amount: totalAmount,
                 delivery_fee: deliveryFee,
+                order_type: deliveryType === "dine_in" ? "dine_in" : deliveryType === "pickup" ? "pickup" : "delivery",
+                table_number: deliveryType === "dine_in" ? tableNumber : null,
                 coupon_id: couponId,
                 coupon_discount: couponDiscount,
                 payment_method: paymentMethod,
