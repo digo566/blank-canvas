@@ -71,7 +71,7 @@ const Index = () => {
       <nav className="relative z-20 bg-[hsl(270,65%,8%)] border-b border-white/10">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-1">
-            <img alt="grape" className="w-[160px] h-[160px] object-contain -mr-2" src="/lovable-uploads/406c7c0e-4c33-4c7a-8880-8b61ca337843.png" />
+            <img alt="grape" className="w-[190px] h-[190px] object-contain -mr-2" src="/lovable-uploads/406c7c0e-4c33-4c7a-8880-8b61ca337843.png" />
             <span className="font-bold text-3xl tracking-tight">​</span>
           </div>
           <Button
