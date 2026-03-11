@@ -15,7 +15,7 @@ const Index = () => {
     name: "",
     email: "",
     whatsapp: "",
-    restaurantName: "",
+    restaurantName: ""
   });
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +31,7 @@ const Index = () => {
         name: formData.name,
         email: formData.email,
         whatsapp: formData.whatsapp,
-        restaurant_name: formData.restaurantName,
+        restaurant_name: formData.restaurantName
       });
     } catch (error) {
       console.error("Lead save error:", error);
@@ -45,13 +45,13 @@ const Index = () => {
           user_data: {
             email: formData.email,
             phone: formData.whatsapp,
-            first_name: formData.name.split(" ")[0],
+            first_name: formData.name.split(" ")[0]
           },
           custom_data: {
-            restaurant_name: formData.restaurantName,
+            restaurant_name: formData.restaurantName
           },
-          event_source_url: window.location.href,
-        },
+          event_source_url: window.location.href
+        }
       });
     } catch (error) {
       console.error("Facebook event error:", error);
@@ -60,7 +60,7 @@ const Index = () => {
       name: formData.name,
       email: formData.email,
       phone: formData.whatsapp,
-      restaurant: formData.restaurantName,
+      restaurant: formData.restaurantName
     });
     navigate(`/subscription?${params.toString()}`);
     setLoading(false);
@@ -71,14 +71,14 @@ const Index = () => {
       <nav className="relative z-20 bg-[hsl(270,65%,8%)] border-b border-white/10">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-1">
-            <img src={grapeLogo} alt="grape" className="w-[100px] h-[100px] object-contain -mr-2" />
+            <img alt="grape" className="w-[100px] h-[100px] object-contain -mr-2" src="/lovable-uploads/406c7c0e-4c33-4c7a-8880-8b61ca337843.png" />
             <span className="font-bold text-3xl tracking-tight">grape</span>
           </div>
           <Button
             variant="outline"
             className="border-white/30 text-white hover:bg-white/10 bg-transparent"
-            onClick={() => navigate("/auth")}
-          >
+            onClick={() => navigate("/auth")}>
+            
             Já sou cliente
           </Button>
         </div>
@@ -86,30 +86,30 @@ const Index = () => {
 
       <div className="relative z-10 bg-[hsl(270,65%,18%)] py-2.5 overflow-hidden">
         <div className="flex animate-[scroll_20s_linear_infinite] whitespace-nowrap gap-12">
-          {[...Array(6)].map((_, i) => (
-            <span key={i} className="flex items-center gap-2 text-sm font-medium text-purple-200">
+          {[...Array(6)].map((_, i) =>
+          <span key={i} className="flex items-center gap-2 text-sm font-medium text-purple-200">
               <Zap className="w-4 h-4 text-yellow-400" />
               Sistema completo para delivery
             </span>
-          ))}
+          )}
         </div>
       </div>
 
       <section className="relative z-10 flex-1 flex items-center overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.06]">
-          {[...Array(8)].map((_, i) => (
-            <img
-              key={i}
-              src={grapeLogo}
-              alt=""
-              className="absolute w-64 h-64 md:w-96 md:h-96"
-              style={{
-                top: `${(i % 3) * 35 + 5}%`,
-                left: `${(i % 4) * 30 - 5}%`,
-                transform: `rotate(${i * 45}deg) scale(${0.8 + (i % 3) * 0.6})`,
-              }}
-            />
-          ))}
+          {[...Array(8)].map((_, i) =>
+          <img
+            key={i}
+            src={grapeLogo}
+            alt=""
+            className="absolute w-64 h-64 md:w-96 md:h-96"
+            style={{
+              top: `${i % 3 * 35 + 5}%`,
+              left: `${i % 4 * 30 - 5}%`,
+              transform: `rotate(${i * 45}deg) scale(${0.8 + i % 3 * 0.6})`
+            }} />
+
+          )}
         </div>
 
         <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none" />
@@ -132,26 +132,26 @@ const Index = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { icon: Shield, text: "Sem taxa por pedido" },
-                  { icon: Smartphone, text: "Cardápio digital" },
-                  { icon: BarChart3, text: "Relatórios completos" },
-                  { icon: Clock, text: "Setup em 5 minutos" },
-                ].map(({ icon: Icon, text }, i) => (
-                  <div key={i} className="flex items-center gap-2.5 text-white/80">
+                { icon: Shield, text: "Sem taxa por pedido" },
+                { icon: Smartphone, text: "Cardápio digital" },
+                { icon: BarChart3, text: "Relatórios completos" },
+                { icon: Clock, text: "Setup em 5 minutos" }].
+                map(({ icon: Icon, text }, i) =>
+                <div key={i} className="flex items-center gap-2.5 text-white/80">
                     <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
                       <Icon className="w-4 h-4 text-yellow-400" />
                     </div>
                     <span className="text-sm font-medium">{text}</span>
                   </div>
-                ))}
+                )}
               </div>
 
               <div className="flex items-center gap-4">
                 <Button
                   size="lg"
                   className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-base px-8"
-                  onClick={() => document.getElementById('lead-name')?.focus()}
-                >
+                  onClick={() => document.getElementById('lead-name')?.focus()}>
+                  
                   Contratar agora
                 </Button>
                 <span className="text-white/50 text-sm">Sem compromisso</span>
@@ -178,8 +178,8 @@ const Index = () => {
                       placeholder="Nome completo"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-[hsl(270,65%,45%)] h-12 rounded-xl"
-                    />
+                      className="border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-[hsl(270,65%,45%)] h-12 rounded-xl" />
+                    
                   </div>
 
                   <div className="space-y-1.5">
@@ -190,8 +190,8 @@ const Index = () => {
                       placeholder="email@exemplo.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-[hsl(270,65%,45%)] h-12 rounded-xl"
-                    />
+                      className="border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-[hsl(270,65%,45%)] h-12 rounded-xl" />
+                    
                   </div>
 
                   <div className="space-y-1.5">
@@ -202,8 +202,8 @@ const Index = () => {
                       placeholder="(85) 99999-8888"
                       value={formData.whatsapp}
                       onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-                      className="border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-[hsl(270,65%,45%)] h-12 rounded-xl"
-                    />
+                      className="border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-[hsl(270,65%,45%)] h-12 rounded-xl" />
+                    
                   </div>
 
                   <div className="space-y-1.5">
@@ -213,16 +213,16 @@ const Index = () => {
                       placeholder="Meu Restaurante"
                       value={formData.restaurantName}
                       onChange={(e) => setFormData({ ...formData, restaurantName: e.target.value })}
-                      className="border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-[hsl(270,65%,45%)] h-12 rounded-xl"
-                    />
+                      className="border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-[hsl(270,65%,45%)] h-12 rounded-xl" />
+                    
                   </div>
 
                   <Button
                     type="submit"
                     size="lg"
                     className="w-full bg-[hsl(270,65%,45%)] hover:bg-[hsl(270,65%,38%)] text-white font-bold text-base mt-2 h-12 rounded-xl"
-                    disabled={loading}
-                  >
+                    disabled={loading}>
+                    
                     {loading ? "Enviando..." : "Testar grátis"}
                   </Button>
 
@@ -243,24 +243,24 @@ const Index = () => {
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {[
-              { title: "Cardápio Digital", desc: "Seus clientes fazem pedidos direto pelo celular, sem precisar de app." },
-              { title: "Gestão de Pedidos", desc: "Acompanhe todos os pedidos em tempo real com notificações." },
-              { title: "CRM de Clientes", desc: "Histórico completo de cada cliente para fidelizar mais." },
-              { title: "Relatórios Detalhados", desc: "Entenda suas vendas com gráficos e métricas inteligentes." },
-              { title: "Sem Taxa por Pedido", desc: "Pague um valor fixo e receba quantos pedidos quiser." },
-              { title: "Suporte Dedicado", desc: "Time pronto para te ajudar quando você precisar." },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="p-6 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm text-left hover:bg-white/10 transition-colors"
-              >
+            { title: "Cardápio Digital", desc: "Seus clientes fazem pedidos direto pelo celular, sem precisar de app." },
+            { title: "Gestão de Pedidos", desc: "Acompanhe todos os pedidos em tempo real com notificações." },
+            { title: "CRM de Clientes", desc: "Histórico completo de cada cliente para fidelizar mais." },
+            { title: "Relatórios Detalhados", desc: "Entenda suas vendas com gráficos e métricas inteligentes." },
+            { title: "Sem Taxa por Pedido", desc: "Pague um valor fixo e receba quantos pedidos quiser." },
+            { title: "Suporte Dedicado", desc: "Time pronto para te ajudar quando você precisar." }].
+            map((item, i) =>
+            <div
+              key={i}
+              className="p-6 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm text-left hover:bg-white/10 transition-colors">
+              
                 <div className="flex items-center gap-3 mb-3">
                   <CheckCircle className="w-5 h-5 text-yellow-400 flex-shrink-0" />
                   <h3 className="font-semibold text-lg">{item.title}</h3>
                 </div>
                 <p className="text-white/60 text-sm leading-relaxed">{item.desc}</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -285,43 +285,43 @@ const Index = () => {
               </thead>
               <tbody>
                 {[
-                  ["Cardápio digital com QR Code", true, true],
-                  ["Gestão de pedidos em tempo real", true, true],
-                  ["Display de Cozinha (KDS)", true, false],
-                  ["PDV / Ponto de Venda", true, false],
-                  ["Pedido por mesa via QR Code", true, false],
-                  ["Atendente Virtual com IA", true, false],
-                  ["Analytics inteligente com IA", true, false],
-                  ["Rastreamento de pedido pelo cliente", true, false],
-                  ["CRM de clientes integrado", true, false],
-                  ["Recuperação de carrinhos abandonados", true, false],
-                  ["Gestão financeira completa", true, false],
-                  ["Controle de estoque com alertas", true, false],
-                  ["Matriz BCG de produtos", true, false],
-                  ["Programa de fidelidade", true, false],
-                  ["Cupons de desconto", true, true],
-                  ["Zonas de entrega com taxas", true, true],
-                  ["Zero taxa por pedido", true, false],
-                  ["Pré Nota Fiscal", true, false],
-                ].map(([feature, grape, other], i) => (
-                  <tr key={i} className={`border-t border-white/5 ${i % 2 === 0 ? "bg-white/[0.02]" : ""}`}>
+                ["Cardápio digital com QR Code", true, true],
+                ["Gestão de pedidos em tempo real", true, true],
+                ["Display de Cozinha (KDS)", true, false],
+                ["PDV / Ponto de Venda", true, false],
+                ["Pedido por mesa via QR Code", true, false],
+                ["Atendente Virtual com IA", true, false],
+                ["Analytics inteligente com IA", true, false],
+                ["Rastreamento de pedido pelo cliente", true, false],
+                ["CRM de clientes integrado", true, false],
+                ["Recuperação de carrinhos abandonados", true, false],
+                ["Gestão financeira completa", true, false],
+                ["Controle de estoque com alertas", true, false],
+                ["Matriz BCG de produtos", true, false],
+                ["Programa de fidelidade", true, false],
+                ["Cupons de desconto", true, true],
+                ["Zonas de entrega com taxas", true, true],
+                ["Zero taxa por pedido", true, false],
+                ["Pré Nota Fiscal", true, false]].
+                map(([feature, grape, other], i) =>
+                <tr key={i} className={`border-t border-white/5 ${i % 2 === 0 ? "bg-white/[0.02]" : ""}`}>
                     <td className="p-4 text-white/80">{feature as string}</td>
                     <td className="p-4 text-center">
-                      {grape ? (
-                        <span className="text-green-400 font-bold text-lg">✓</span>
-                      ) : (
-                        <span className="text-red-400">✗</span>
-                      )}
+                      {grape ?
+                    <span className="text-green-400 font-bold text-lg">✓</span> :
+
+                    <span className="text-red-400">✗</span>
+                    }
                     </td>
                     <td className="p-4 text-center">
-                      {other ? (
-                        <span className="text-white/40">✓</span>
-                      ) : (
-                        <span className="text-red-400/60">✗</span>
-                      )}
+                      {other ?
+                    <span className="text-white/40">✓</span> :
+
+                    <span className="text-red-400/60">✗</span>
+                    }
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -331,8 +331,8 @@ const Index = () => {
               src="/images/devices-showcase.png"
               alt="Grape em todos os dispositivos"
               className="max-w-2xl w-full object-contain"
-              loading="lazy"
-            />
+              loading="lazy" />
+            
           </div>
         </div>
       </section>
@@ -349,8 +349,8 @@ const Index = () => {
           100% { transform: translateX(-50%); }
         }
       `}</style>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Index;
