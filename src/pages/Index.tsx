@@ -72,7 +72,7 @@ const Index = () => {
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-1">
             <img alt="grape" className="w-[100px] h-[100px] object-contain -mr-2" src="/lovable-uploads/406c7c0e-4c33-4c7a-8880-8b61ca337843.png" />
-            <span className="font-bold text-3xl tracking-tight">grape</span>
+            <span className="font-bold text-3xl tracking-tight">​</span>
           </div>
           <Button
             variant="outline"
