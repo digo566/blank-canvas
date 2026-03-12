@@ -8,7 +8,7 @@ import { NavLink } from "@/components/NavLink";
 import { 
   LayoutDashboard, Package, ShoppingBag, Users, LogOut, Menu,
   ShoppingCart, BarChart3, Settings, Crown, AlertTriangle, MessageSquarePlus, Wallet,
-  ChefHat, QrCode, Store
+  ChefHat, QrCode, Store, Target
 } from "lucide-react";
 import grapeLogo from "@/assets/grape-logo.png";
 import { toast } from "sonner";
@@ -59,7 +59,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { to: "/settings", icon: Settings, label: "Configurações" },
     { to: "/feedback", icon: MessageSquarePlus, label: "Opiniões" },
     ...(isAdmin ? [
-      { to: "/admin", icon: Crown, label: "Admin Grape" }
+      { to: "/crm", icon: Target, label: "CRM" },
+      { to: "/admin", icon: Crown, label: "Admin Grape" },
     ] : []),
   ];
 
