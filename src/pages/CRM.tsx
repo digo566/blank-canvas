@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
+import { Navigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,7 @@ import LeadFormDialog from "@/components/crm/LeadFormDialog";
 import LeadDetailSheet from "@/components/crm/LeadDetailSheet";
 
 const CRM = () => {
+  const { isAdmin, loading: adminLoading } = useAdminCheck();
   const [leads, setLeads] = useState<CRMLead[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -78,6 +81,20 @@ const CRM = () => {
         l.phone.includes(search)
       )
     : leads;
+
+  if (adminLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <DashboardLayout>
