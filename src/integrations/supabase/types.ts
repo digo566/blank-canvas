@@ -361,6 +361,98 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_interactions: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          interaction_type: string
+          lead_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          interaction_type?: string
+          lead_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          interaction_type?: string
+          lead_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_interactions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_leads: {
+        Row: {
+          city: string | null
+          contact_name: string
+          converted_at: string | null
+          converted_user_id: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          lead_source: string | null
+          lost_reason: string | null
+          next_follow_up: string | null
+          notes: string | null
+          phone: string
+          restaurant_name: string
+          stage: string
+          trial_ends_at: string | null
+          trial_started_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          city?: string | null
+          contact_name: string
+          converted_at?: string | null
+          converted_user_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          lead_source?: string | null
+          lost_reason?: string | null
+          next_follow_up?: string | null
+          notes?: string | null
+          phone: string
+          restaurant_name: string
+          stage?: string
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          city?: string | null
+          contact_name?: string
+          converted_at?: string | null
+          converted_user_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          lead_source?: string | null
+          lost_reason?: string | null
+          next_follow_up?: string | null
+          notes?: string | null
+          phone?: string
+          restaurant_name?: string
+          stage?: string
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       delivery_zones: {
         Row: {
           created_at: string | null
