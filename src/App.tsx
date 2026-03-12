@@ -77,6 +77,7 @@ const App = () => (
                 <Route path="/kitchen" element={<Kitchen />} />
                 <Route path="/tables" element={<TableQRCodes />} />
                 <Route path="/pos" element={<POS />} />
+                <Route path="/crm" element={<CRM />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
