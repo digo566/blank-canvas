@@ -8,7 +8,7 @@ import { NavLink } from "@/components/NavLink";
 import { 
   LayoutDashboard, Package, ShoppingBag, Users, LogOut, Menu,
   ShoppingCart, BarChart3, Settings, Crown, AlertTriangle, MessageSquarePlus, Wallet,
-  ChefHat, QrCode, Store
+  ChefHat, QrCode, Store, Target
 } from "lucide-react";
 import grapeLogo from "@/assets/grape-logo.png";
 import { toast } from "sonner";
