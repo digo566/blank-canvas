@@ -32,6 +32,7 @@ const Feedback = lazy(() => import("./pages/Feedback"));
 const Kitchen = lazy(() => import("./pages/Kitchen"));
 const TableQRCodes = lazy(() => import("./pages/TableQRCodes"));
 const POS = lazy(() => import("./pages/POS"));
+const CRM = lazy(() => import("./pages/CRM"));
 
 const queryClient = new QueryClient();
 
