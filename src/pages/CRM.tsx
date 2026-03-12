@@ -82,6 +82,20 @@ const CRM = () => {
       )
     : leads;
 
+  if (adminLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
