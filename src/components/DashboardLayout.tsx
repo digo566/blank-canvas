@@ -90,7 +90,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   if (!user) return null;
 
-  if (!isAdmin && !hasActiveSubscription) {
+  if (!isAdmin && !isSeller && !hasActiveSubscription) {
     return <Navigate to="/subscription" replace />;
   }
 
