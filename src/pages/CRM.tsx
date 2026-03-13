@@ -43,7 +43,11 @@ const CRM = () => {
       if (error) toast.error("Erro ao atualizar lead");
       else toast.success("Lead atualizado!");
     } else {
-      const { error } = await supabase.from("crm_leads").insert(formData);
+      // Sellers: auto-assign lead to themselves
+      const insertData = isSeller && !isAdmin
+        ? { ...formData, assigned_to: (await supabase.auth.getUser()).data.user?.id }
+        : formData;
+      const { error } = await supabase.from("crm_leads").insert(insertData);
       if (error) toast.error("Erro ao criar lead");
       else toast.success("Lead cadastrado!");
     }

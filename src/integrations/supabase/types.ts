@@ -395,6 +395,7 @@ export type Database = {
       }
       crm_leads: {
         Row: {
+          assigned_to: string | null
           city: string | null
           contact_name: string
           converted_at: string | null
@@ -414,6 +415,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          assigned_to?: string | null
           city?: string | null
           contact_name: string
           converted_at?: string | null
@@ -433,6 +435,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          assigned_to?: string | null
           city?: string | null
           contact_name?: string
           converted_at?: string | null
