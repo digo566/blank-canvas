@@ -92,7 +92,7 @@ const CRM = () => {
     );
   }
 
-  if (!isAdmin) {
+  if (!isAdmin && !isSeller) {
     return <Navigate to="/dashboard" replace />;
   }
 

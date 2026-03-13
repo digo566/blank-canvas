@@ -58,8 +58,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { to: "/tables", icon: QrCode, label: "QR Mesas" },
     { to: "/settings", icon: Settings, label: "Configurações" },
     { to: "/feedback", icon: MessageSquarePlus, label: "Opiniões" },
-    ...(isAdmin ? [
+    ...((isAdmin || isSeller) ? [
       { to: "/crm", icon: Target, label: "CRM" },
+    ] : []),
+    ...(isAdmin ? [
       { to: "/admin", icon: Crown, label: "Admin Grape" },
     ] : []),
   ];
