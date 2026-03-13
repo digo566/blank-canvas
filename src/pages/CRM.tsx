@@ -13,7 +13,7 @@ import LeadFormDialog from "@/components/crm/LeadFormDialog";
 import LeadDetailSheet from "@/components/crm/LeadDetailSheet";
 
 const CRM = () => {
-  const { isAdmin, loading: adminLoading } = useAdminCheck();
+  const { isAdmin, isSeller, loading: adminLoading } = useAdminCheck();
   const [leads, setLeads] = useState<CRMLead[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
