@@ -24,7 +24,7 @@ interface DashboardLayoutProps {
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const { isAdmin } = useAdminCheck();
+  const { isAdmin, isSeller } = useAdminCheck();
   const { loading: subLoading, hasActiveSubscription, isOnTrial, trialDaysLeft } = useSubscriptionContext();
 
   useOrderNotifications();
@@ -58,8 +58,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     { to: "/tables", icon: QrCode, label: "QR Mesas" },
     { to: "/settings", icon: Settings, label: "Configurações" },
     { to: "/feedback", icon: MessageSquarePlus, label: "Opiniões" },
-    ...(isAdmin ? [
+    ...((isAdmin || isSeller) ? [
       { to: "/crm", icon: Target, label: "CRM" },
+    ] : []),
+    ...(isAdmin ? [
       { to: "/admin", icon: Crown, label: "Admin Grape" },
     ] : []),
   ];
@@ -88,7 +90,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   if (!user) return null;
 
-  if (!isAdmin && !hasActiveSubscription) {
+  if (!isAdmin && !isSeller && !hasActiveSubscription) {
     return <Navigate to="/subscription" replace />;
   }
 
