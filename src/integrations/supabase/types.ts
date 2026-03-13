@@ -1578,7 +1578,7 @@ export type Database = {
       mark_abandoned_carts: { Args: never; Returns: undefined }
     }
     Enums: {
-      app_role: "admin" | "restaurant"
+      app_role: "admin" | "restaurant" | "seller"
       order_status:
         | "pending"
         | "preparing"
@@ -1713,7 +1713,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "restaurant"],
+      app_role: ["admin", "restaurant", "seller"],
       order_status: [
         "pending",
         "preparing",
