@@ -24,7 +24,7 @@ interface DashboardLayoutProps {
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const { isAdmin, isSeller } = useAdminCheck();
+  const { isAdmin, isSeller, loading: adminRoleLoading } = useAdminCheck();
   const { loading: subLoading, hasActiveSubscription, isOnTrial, trialDaysLeft } = useSubscriptionContext();
 
   useOrderNotifications();
@@ -80,7 +80,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     </>
   );
 
-  if (loading || subLoading) {
+  if (loading || subLoading || adminRoleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent"></div>
