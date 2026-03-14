@@ -24,7 +24,7 @@ interface DashboardLayoutProps {
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const { isAdmin, isSeller } = useAdminCheck();
+  const { isAdmin, isSeller, loading: adminRoleLoading } = useAdminCheck();
   const { loading: subLoading, hasActiveSubscription, isOnTrial, trialDaysLeft } = useSubscriptionContext();
 
   useOrderNotifications();
